@@ -2,25 +2,44 @@ using AutoService.Domain.Enums;
 
 namespace AutoService.Domain.Entities;
 
+/// <summary>
+/// Represents a type of repair work provided by the auto service.
+/// </summary>
 public class WorkType
 {
+    /// <summary>
+    /// Unique identifier of the work type.
+    /// </summary>
     public int Id { get; set; }
 
+    /// <summary>
+    /// Name of the work type.
+    /// </summary>
+    public required string Name { get; set; }
 
-    public string Name { get; set; } = string.Empty;
-
-
+    /// <summary>
+    /// Category of the work.
+    /// </summary>
     public WorkCategory Category { get; set; }
 
-
+    /// <summary>
+    /// Price of the work.
+    /// </summary>
     public decimal Cost { get; set; }
 
-
+    /// <summary>
+    /// Estimated duration of the work.
+    /// </summary>
     public TimeSpan Duration { get; set; }
 
+    /// <summary>
+    /// Description of the work.
+    /// </summary>
+    public required string Description { get; set; }
 
-    public string Description { get; set; } = string.Empty;
-
-
+    /// <summary>
+    /// Repair orders associated with this work type.
+    /// </summary>
     public List<OrderWork> Orders { get; set; } = [];
+
 }

@@ -4,71 +4,61 @@ using Bogus;
 
 namespace AutoService.Domain.Data;
 
+/// <summary>
+/// Generates test data for the auto service domain model.
+/// </summary>
 public static class DataSeeder
 {
+    /// <summary>
+    /// Creates and populates an in-memory auto service data context.
+    /// </summary>
     public static AutoServiceContext Seed()
     {
         var context = new AutoServiceContext();
 
         CreateClients(context);
-
         CreateCars(context);
-
         CreateMechanics(context);
-
         CreateWorkTypes(context);
-
         CreateOrders(context);
 
         return context;
     }
 
-
+    /// <summary>
+    /// Creates test clients and adds them to the context.
+    /// </summary>
     private static void CreateClients(AutoServiceContext context)
     {
         var clientFaker = new Faker<Client>()
-            .RuleFor(
-                x => x.Id,
-                f => f.IndexFaker + 1)
-            .RuleFor(
-                x => x.FullName,
-                f => f.Person.FullName)
-            .RuleFor(
-                x => x.Phone,
-                f => f.Phone.PhoneNumber());
+            .RuleFor(x => x.Id, f => f.IndexFaker + 1)
+            .RuleFor(x => x.FullName, f => f.Person.FullName)
+            .RuleFor(x => x.Phone, f => f.Phone.PhoneNumber());
 
-        context.Clients.AddRange(
-            clientFaker.Generate(10));
+        context.Clients.AddRange(clientFaker.Generate(10));
     }
 
-
+    /// <summary>
+    /// Creates test mechanics and adds them to the context.
+    /// </summary>
     private static void CreateMechanics(AutoServiceContext context)
     {
         var mechanicFaker = new Faker<Mechanic>()
-            .RuleFor(
-                x => x.Id,
-                f => f.IndexFaker + 1)
-            .RuleFor(
-                x => x.PassportNumber,
-                f => f.Random.Replace("##########"))
-            .RuleFor(
-                x => x.FullName,
-                f => f.Person.FullName)
-            .RuleFor(
-                x => x.Experience,
-                f => f.Random.Int(1, 30))
+            .RuleFor(x => x.Id, f => f.IndexFaker + 1)
+            .RuleFor(x => x.PassportNumber, f => f.Random.Replace("##########"))
+            .RuleFor(x => x.FullName, f => f.Person.FullName)
+            .RuleFor(x => x.Experience, f => f.Random.Int(1, 30))
             .RuleFor(
                 x => x.Specialization,
-                f =>
-                    (MechanicSpecialization)
-                    (f.IndexFaker %
-                    Enum.GetValues<MechanicSpecialization>().Length));
+                f =>(MechanicSpecialization)(
+                    f.IndexFaker % Enum.GetValues<MechanicSpecialization>().Length));
 
-        context.Mechanics.AddRange(
-            mechanicFaker.Generate(10));
+        context.Mechanics.AddRange(mechanicFaker.Generate(10));
     }
 
-
+    /// <summary>
+    /// Creates predefined work types and adds them to the context.
+    /// </summary>
     private static void CreateWorkTypes(AutoServiceContext context)
     {
         var works = new List<WorkType>
@@ -177,80 +167,52 @@ public static class DataSeeder
         context.WorkTypes.AddRange(works);
     }
 
-
+    /// <summary>
+    /// Creates test cars and associates them with existing clients.
+    /// </summary>
     private static void CreateCars(AutoServiceContext context)
     {
         var carFaker = new Faker<Car>()
-            .RuleFor(
-                x => x.Id,
-                f => f.IndexFaker + 1)
+            .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(
                 x => x.LicensePlate,
                 f => $"{f.Random.String2(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")}{f.Random.Int(100, 999)}")
-            .RuleFor(
-                x => x.Brand,
-                f => f.Vehicle.Manufacturer())
-            .RuleFor(
-                x => x.Model,
-                f => f.Vehicle.Model())
-            .RuleFor(
-                x => x.Year,
-                f => f.Random.Int(2000, 2026))
-            .RuleFor(
-                x => x.ClientId,
-                f => f.PickRandom(context.Clients).Id)
-            .RuleFor(
-                x => x.Client,
-                (f, x) =>
-                    context.Clients
-                        .First(c => c.Id == x.ClientId));
+            .RuleFor(x => x.Brand, f => f.Vehicle.Manufacturer())
+            .RuleFor(x => x.Model, f => f.Vehicle.Model())
+            .RuleFor(x => x.Year, f => f.Random.Int(2000, 2026))
+            .RuleFor(x => x.ClientId, f => f.PickRandom(context.Clients).Id)
+            .RuleFor(x => x.Client, (f, x) => context.Clients.First(c => c.Id == x.ClientId));
 
-        context.Cars.AddRange(
-            carFaker.Generate(10));
+        context.Cars.AddRange(carFaker.Generate(10));
     }
 
-
+    /// <summary>
+    /// Creates test repair orders and assigns works and mechanics to them.
+    /// </summary>
     private static void CreateOrders(AutoServiceContext context)
     {
         var orderFaker = new Faker<RepairOrder>()
-            .RuleFor(
-                x => x.Id,
-                f => f.IndexFaker + 1)
-            .RuleFor(
-                x => x.CarId,
-                f => f.PickRandom(context.Cars).Id)
+            .RuleFor(x => x.Id, f => f.IndexFaker + 1)
+            .RuleFor(x => x.CarId, f => f.PickRandom(context.Cars).Id)
             .RuleFor(
                 x => x.ClientId,
-                (f, x) =>
-                    context.Cars
-                    .First(car => car.Id == x.CarId)
-                    .ClientId)
+                (f, x) => context.Cars.First(car => car.Id == x.CarId).ClientId)
             .RuleFor(
                 x => x.AdmissionDate,
-                f => f.Random.Bool()
-                    ? f.Date.Recent(20)
-                    : f.Date.Past(1))
+                f => f.Random.Bool() ? f.Date.Recent(20) : f.Date.Past(1))
             .RuleFor(
                 x => x.ReleaseDate,
-                (f, order) =>
-                    order.AdmissionDate.AddDays(
-                        f.Random.Int(1, 7)));
+                (f, order) => order.AdmissionDate.AddDays(f.Random.Int(1, 7)));
 
 
         var orders = orderFaker.Generate(20);
 
         foreach (var order in orders)
         {
-            order.Client =
-                context.Clients
-                    .First(x => x.Id == order.ClientId);
-
-            order.Car =
-                context.Cars
-                    .First(x => x.Id == order.CarId);
+            order.Client = context.Clients.First(x => x.Id == order.ClientId);
+            order.Car =context.Cars.First(x => x.Id == order.CarId);
 
             AddWorks(context, order);
-
             AddMechanics(context, order);
 
         }
@@ -262,13 +224,12 @@ public static class DataSeeder
     private static int _orderMechanicId = 1;
     private static int _orderWorkId = 1;
 
-
-    private static void AddMechanics(
-        AutoServiceContext context,
-        RepairOrder order)
+    /// <summary>
+    /// Assigns mechanics to a repair order according to the required work specializations.
+    /// </summary>
+    private static void AddMechanics(AutoServiceContext context, RepairOrder order)
     {
-        var requiredSpecializations =
-            order.Works
+        var requiredSpecializations = order.Works
                 .Select(work => work.WorkType.Category)
                 .Where(category => category != WorkCategory.Maintenance)
                 .Select(category => category switch
@@ -284,25 +245,16 @@ public static class DataSeeder
                 .Distinct()
                 .ToList();
 
-        var mechanics =
-            context.Mechanics
-                .Where(mechanic =>
-                    requiredSpecializations
-                        .Contains(mechanic.Specialization))
+        var mechanics = context.Mechanics
+                .Where(mechanic => requiredSpecializations.Contains(mechanic.Specialization))
                 .GroupBy(mechanic => mechanic.Specialization)
-                .Select(group =>
-                    group
-                        .OrderBy(_ => Guid.NewGuid())
-                        .First())
+                .Select(group => group.OrderBy(_ => Guid.NewGuid()).First())
                 .ToList();
 
         if (order.Works.Any(work =>
                 work.WorkType.Category == WorkCategory.Maintenance))
         {
-            var randomMechanic =
-                context.Mechanics
-                    .OrderBy(_ => Guid.NewGuid())
-                    .First();
+            var randomMechanic = context.Mechanics.OrderBy(_ => Guid.NewGuid()).First();
 
             if (!mechanics.Any(mechanic => mechanic.Id == randomMechanic.Id))
             {
@@ -315,52 +267,36 @@ public static class DataSeeder
             var orderMechanic = new OrderMechanic
             {
                 Id = _orderMechanicId++,
-
                 RepairOrder = order,
-
                 RepairOrderId = order.Id,
-
                 Mechanic = mechanic,
-
                 MechanicId = mechanic.Id
             };
 
             order.Mechanics.Add(orderMechanic);
-
             mechanic.Orders.Add(orderMechanic);
         }
     }
 
-
-    private static void AddWorks(
-        AutoServiceContext context,
-        RepairOrder order)
+    /// <summary>
+    /// Assigns randomly selected work types to a repair order.
+    /// </summary>
+    private static void AddWorks(AutoServiceContext context, RepairOrder order)
     {
-        var works =
-            context.WorkTypes
-                .OrderBy(_ => Guid.NewGuid())
-                .Take(3)
-                .ToList();
-
+        var works = context.WorkTypes.OrderBy(_ => Guid.NewGuid()).Take(3).ToList();
 
         foreach (var work in works)
         {
             var orderWork = new OrderWork
             {
                 Id = _orderWorkId++,
-
                 RepairOrder = order,
-
                 RepairOrderId = order.Id,
-
                 WorkType = work,
-
                 WorkTypeId = work.Id
             };
 
-
             order.Works.Add(orderWork);
-
             work.Orders.Add(orderWork);
         }
     }
