@@ -5,6 +5,7 @@ namespace AutoService.Domain.Entities;
 /// </summary>
 public class OrderMechanic
 {
+
     /// <summary>
     /// Unique identifier of the association.
     /// </summary>

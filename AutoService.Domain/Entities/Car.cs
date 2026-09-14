@@ -5,6 +5,7 @@ namespace AutoService.Domain.Entities;
 /// </summary>
 public class Car
 {
+
     /// <summary>
     /// Unique identifier of the car.
     /// </summary>
