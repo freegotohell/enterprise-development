@@ -15,9 +15,5 @@ public class AutoServiceFixture
     /// <summary>
     /// Initializes the test fixture and seeds the AutoService data.
     /// </summary>
-    public AutoServiceFixture()
-        {
-            Context = DataSeeder.Seed();
-        }
-
+    public AutoServiceFixture(){ Context = DataSeeder.Seed(); }
 }

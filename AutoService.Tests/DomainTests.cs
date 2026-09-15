@@ -1,5 +1,4 @@
 using AutoService.Tests.Fixtures;
-using Xunit;
 
 namespace AutoService.Tests;
 
