@@ -183,7 +183,14 @@ public static class DataSeeder
             .RuleFor(x => x.ClientId, f => f.PickRandom(context.Clients).Id)
             .RuleFor(x => x.Client, (f, x) => context.Clients.First(c => c.Id == x.ClientId));
 
-        context.Cars.AddRange(carFaker.Generate(10));
+        var cars = carFaker.Generate(10);
+
+        foreach (var car in cars)
+        {
+            car.Client.Cars.Add(car);
+        }
+
+        context.Cars.AddRange(cars);
     }
 
     /// <summary>
@@ -211,6 +218,9 @@ public static class DataSeeder
         {
             order.Client = context.Clients.First(x => x.Id == order.ClientId);
             order.Car =context.Cars.First(x => x.Id == order.CarId);
+
+            order.Car.Orders.Add(order);
+            order.Client.Orders.Add(order);
 
             AddWorks(context, order);
             AddMechanics(context, order);
