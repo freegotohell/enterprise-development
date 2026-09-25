@@ -1,4 +1,4 @@
-using AutoService.Domain.Enums;
+using AutoService.Domain.Shared.Enums;
 using AutoService.Tests.Fixtures;
 
 namespace AutoService.Tests;

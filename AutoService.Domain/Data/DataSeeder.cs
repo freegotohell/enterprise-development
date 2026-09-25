@@ -1,5 +1,5 @@
 using AutoService.Domain.Entities;
-using AutoService.Domain.Enums;
+using AutoService.Domain.Shared.Enums;
 using Bogus;
 
 namespace AutoService.Domain.Data;

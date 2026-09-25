@@ -1,4 +1,4 @@
-namespace AutoService.Domain.Enums;
+namespace AutoService.Domain.Shared.Enums;
 
 /// <summary>
 /// Represents the specialization of a mechanic.

@@ -1,4 +1,4 @@
-using AutoService.Domain.Enums;
+using AutoService.Domain.Shared.Enums;
 
 namespace AutoService.Domain.Entities;
 

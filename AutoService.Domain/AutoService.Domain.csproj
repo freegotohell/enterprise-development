@@ -10,4 +10,8 @@
     <PackageReference Include="Bogus" Version="35.6.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AutoService.Domain.Shared\AutoService.Domain.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

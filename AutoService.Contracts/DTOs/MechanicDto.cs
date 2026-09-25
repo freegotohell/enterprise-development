@@ -1,4 +1,4 @@
-using AutoService.Contracts.Enums;
+using AutoService.Domain.Shared.Enums;
 
 namespace AutoService.Contracts.DTOs;
 

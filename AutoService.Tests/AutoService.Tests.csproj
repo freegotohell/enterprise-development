@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AutoService.Domain.Shared\AutoService.Domain.Shared.csproj" />
     <ProjectReference Include="..\AutoService.Domain\AutoService.Domain.csproj" />
   </ItemGroup>
 

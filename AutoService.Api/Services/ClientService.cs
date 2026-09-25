@@ -14,7 +14,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     /// </summary>
     public List<ClientDto> GetAll()
     {
-        logger.LogInformation("Getting all clients.");
+        logger.LogInformation("Getting all clients");
 
         return context.Clients.Select(ToDto).ToList();
     }
@@ -24,7 +24,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     /// </summary>
     public ClientDto? GetById(int id)
     {
-        logger.LogInformation("Getting client with ID {ClientId}.", id);
+        logger.LogInformation("Getting client with ID {ClientId}", id);
 
         var client = context.Clients.FirstOrDefault(x => x.Id == id);
 
@@ -36,7 +36,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     /// </summary>
     public ClientDto Create(CreateClientDto dto)
     {
-        logger.LogInformation("Creating a new client.");
+        logger.LogInformation("Creating a new client");
 
         var client = new Client
         {
@@ -47,7 +47,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
 
         context.Clients.Add(client);
 
-        logger.LogInformation("Client with ID {ClientId} was created.", client.Id);
+        logger.LogInformation("Client with ID {ClientId} was created", client.Id);
 
         return ToDto(client);
     }
@@ -57,13 +57,13 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     /// </summary>
     public ClientDto? Update(int id, UpdateClientDto dto)
     {
-        logger.LogInformation("Updating client with ID {ClientId}.", id);
+        logger.LogInformation("Updating client with ID {ClientId}", id);
 
         var client = context.Clients.FirstOrDefault(x => x.Id == id);
 
         if (client is null)
         {
-            logger.LogWarning("Client with ID {ClientId} was not found.", id);
+            logger.LogWarning("Client with ID {ClientId} was not found", id);
 
             return null;
         }
@@ -71,30 +71,30 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
         client.FullName = dto.FullName;
         client.Phone = dto.Phone;
 
-        logger.LogInformation("Client with ID {ClientId} was updated.", id);
+        logger.LogInformation("Client with ID {ClientId} was updated", id);
 
         return ToDto(client);
     }
 
     /// <summary>
-    /// Deletes a client by identifier
+    /// Deletes a client by id
     /// </summary>
     public bool Delete(int id)
     {
-        logger.LogInformation("Deleting client with ID {ClientId}.", id);
+        logger.LogInformation("Deleting client with ID {ClientId}", id);
 
         var client = context.Clients.FirstOrDefault(x => x.Id == id);
 
         if (client is null)
         {
-            logger.LogWarning("Client with ID {ClientId} was not found.", id);
+            logger.LogWarning("Client with ID {ClientId} was not found", id);
 
             return false;
         }
 
         context.Clients.Remove(client);
 
-        logger.LogInformation("Client with ID {ClientId} was deleted.", id);
+        logger.LogInformation("Client with ID {ClientId} was deleted", id);
 
         return true;
     }
