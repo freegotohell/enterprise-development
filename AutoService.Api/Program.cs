@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(DataSeeder.Seed());
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<MechanicService>();
+builder.Services.AddScoped<WorkTypeService>();
+builder.Services.AddScoped<RepairOrderService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

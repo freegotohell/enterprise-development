@@ -1,0 +1,91 @@
+﻿using AutoService.Api.Services;
+using AutoService.Contracts.DTOs;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AutoService.Api.Controllers;
+
+/// <summary>
+/// Defines REST endpoints for work types
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTypesController> logger) : ControllerBase
+{
+    /// <summary>
+    /// Gets all work types
+    /// </summary>
+    [HttpGet]
+    public ActionResult<List<WorkTypeDto>> GetAll()
+    {
+        logger.LogInformation("GET /api/worktypes");
+
+        return Ok(workTypeService.GetAll());
+    }
+
+    /// <summary>
+    /// Gets a work type by id
+    /// </summary>
+    [HttpGet("{id:int}")]
+    public ActionResult<WorkTypeDto> GetById(int id)
+    {
+        logger.LogInformation("GET /api/worktypes/{WorkTypeId}", id);
+
+        var workType = workTypeService.GetById(id);
+
+        if (workType is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(workType);
+    }
+
+    /// <summary>
+    /// Creates a new work type
+    /// </summary>
+    [HttpPost]
+    public ActionResult<WorkTypeDto> Create(CreateWorkTypeDto dto)
+    {
+        logger.LogInformation("POST /api/worktypes");
+
+        var workType = workTypeService.Create(dto);
+
+        return CreatedAtAction(nameof(GetById), new { id = workType.Id }, workType);
+    }
+
+    /// <summary>
+    /// Updates an existing work type
+    /// </summary>
+    [HttpPut("{id:int}")]
+    public ActionResult<WorkTypeDto> Update(int id, UpdateWorkTypeDto dto)
+    {
+        logger.LogInformation("PUT /api/worktypes/{WorkTypeId}", id);
+
+        var workType = workTypeService.Update(id, dto);
+
+        if (workType is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(workType);
+    }
+
+    /// <summary>
+    /// Deletes a work type by id
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        logger.LogInformation("DELETE /api/worktypes/{WorkTypeId}", id);
+
+        var deleted = workTypeService.Delete(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+}

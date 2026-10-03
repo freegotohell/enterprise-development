@@ -41,6 +41,24 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     }
 
     /// <summary>
+    /// Retrieves a list of clients associated with a specific mechanic
+    /// </summary>
+    [HttpGet("{id:int}/clients")]
+    public ActionResult<List<ClientDto>> GetClients(int id)
+    {
+        logger.LogInformation("GET /api/mechanics/{MechanicId}/clients", id);
+
+        var clients = mechanicService.GetClients(id);
+
+        if (clients is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(clients);
+    }
+
+    /// <summary>
     /// Creates a new mechanic
     /// </summary>
     [HttpPost]

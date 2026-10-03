@@ -105,6 +105,35 @@ public class MechanicService(
         return true;
     }
 
+    /// <summary>
+    /// Retrieves list of clients whose repair orders associated with a specific mechanic
+    /// </summary>
+    public List<ClientDto>? GetClients(int mechanicId)
+    {
+        logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
+
+        var mechanicExists = context.Mechanics.Any(x => x.Id == mechanicId);
+
+        if (!mechanicExists)
+        {
+            logger.LogWarning( "Mechanic with ID {MechanicId} was not found", mechanicId);
+
+            return null;
+        }
+
+        return context.RepairOrders
+            .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId))
+            .Select(order => order.Client)
+            .Distinct()
+            .OrderBy(client => client.FullName)
+            .Select(client => new ClientDto
+            {
+                Id = client.Id,
+                FullName = client.FullName,
+                Phone = client.Phone
+            })
+            .ToList();
+    }
     private static MechanicDto ToDto(Mechanic mechanic)
     {
         return new MechanicDto
