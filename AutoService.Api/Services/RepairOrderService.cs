@@ -181,7 +181,14 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
 
             return null;
         }
-
+        
+        if (car.ClientId != client.Id)
+        {
+            logger.LogWarning("Cannot create repair order, car with ID {CarId} does not belong to client with ID {ClientId}", dto.CarId, dto.ClientId);
+        
+            return null;
+        }
+        
         var mechanics = context.Mechanics.Where(x => dto.MechanicIds.Contains(x.Id)).ToList();
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
@@ -289,6 +296,13 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             return null;
         }
 
+        if (car.ClientId != client.Id)
+        {
+            logger.LogWarning("Cannot create repair order, car with ID {CarId} does not belong to client with ID {ClientId}", dto.CarId, dto.ClientId);
+        
+            return null;
+        }
+        
         var mechanics = context.Mechanics.Where(x => dto.MechanicIds.Contains(x.Id)).ToList();
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
