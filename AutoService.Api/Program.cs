@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddSingleton(DataSeeder.Seed());
 builder.Services.AddScoped<ClientService>();
+builder.Services.AddScoped<CarService>();
 builder.Services.AddScoped<MechanicService>();
 builder.Services.AddScoped<WorkTypeService>();
 builder.Services.AddScoped<RepairOrderService>();

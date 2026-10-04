@@ -26,8 +26,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Getting repair order with ID {RepairOrderId}", id);
 
-        var order = context.RepairOrders
-            .FirstOrDefault(x => x.Id == id);
+        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         return order is null ? null : ToDto(order);
     }
@@ -303,6 +302,82 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             .Select(x => x.Id)
             .DefaultIfEmpty(0)
             .Max() + 1;
+    }
+
+    /// <summary>
+    /// Gets all repair orders placed by the client
+    /// </summary>
+    public List<RepairOrderDto>? GetByClientId(int clientId)
+    {
+        logger.LogInformation("Getting repair orders for client with ID {ClientId}", clientId);
+
+        var clientExists = context.Clients.Any(x => x.Id == clientId);
+
+        if (!clientExists)
+        {
+            logger.LogWarning("Client with ID {ClientId} was not found", clientId);
+
+            return null;
+        }
+
+        return context.RepairOrders.Where(x => x.ClientId == clientId).Select(ToDto).ToList();
+    }
+
+    /// <summary>
+    /// Gets all repair orders by car id
+    /// </summary>
+    public List<RepairOrderDto>? GetByCarId(int carId)
+    {
+        logger.LogInformation("Getting repair orders for car with ID {CarId}", carId);
+
+        var carExists = context.Cars.Any(x => x.Id == carId);
+
+        if (!carExists)
+        {
+            logger.LogWarning("Car with ID {CarId} was not found", carId);
+
+            return null;
+        }
+
+        return context.RepairOrders.Where(x => x.CarId == carId).Select(ToDto).ToList();
+    }
+
+    /// <summary>
+    /// Gets repair orders associated with the mechanic
+    /// </summary>
+    public List<RepairOrderDto>? GetByMechanicId(int mechanicId)
+    {
+        logger.LogInformation("Getting repair orders for mechanic with ID {MechanicId}", mechanicId);
+
+        var mechanicExists = context.Mechanics.Any(x => x.Id == mechanicId);
+
+        if (!mechanicExists)
+        {
+            logger.LogWarning("Mechanic with ID {MechanicId} was not found", mechanicId);
+
+            return null;
+        }
+
+        return context.RepairOrders.Where(x => x.Mechanics.Any(y => y.MechanicId == mechanicId)).Select(ToDto).ToList();
+    }
+
+    /// <summary>
+    /// Gets repair orders with the work type
+    /// </summary>
+    public List<RepairOrderDto>? GetByWorkTypeId(int workTypeId)
+    {
+        logger.LogInformation("Getting repair orders for work type with ID {WorkTypeId}", workTypeId);
+
+        var workTypeExists = context.WorkTypes.Any(x => x.Id == workTypeId);
+
+        if (!workTypeExists)
+        {
+            logger.LogWarning("Work type with ID {WorkTypeId} was not found", workTypeId);
+
+            return null;
+        }
+
+        return context.RepairOrders.Where(x => x.Works.Any(y => y.WorkTypeId == workTypeId)).Select(ToDto).ToList();
     }
 
     /// <summary>

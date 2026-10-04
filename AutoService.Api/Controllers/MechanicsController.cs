@@ -68,6 +68,11 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
 
         var mechanic = mechanicService.Create(dto);
 
+        if (mechanic is null)
+        {
+            return BadRequest();
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = mechanic.Id }, mechanic);
     }
 

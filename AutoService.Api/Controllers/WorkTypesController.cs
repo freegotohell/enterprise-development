@@ -50,6 +50,11 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
 
         var workType = workTypeService.Create(dto);
 
+        if (workType is null)
+        {
+            return BadRequest();
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = workType.Id }, workType);
     }
 

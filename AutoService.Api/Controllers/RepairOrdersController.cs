@@ -41,6 +41,78 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     }
 
     /// <summary>
+    /// Gets all repair orders placed by the client
+    /// </summary>
+    [HttpGet("/api/clients/{clientId:int}/repairorders")]
+    public ActionResult<List<RepairOrderDto>> GetByClientId(int clientId)
+    {
+        logger.LogInformation("GET /api/clients/{ClientId}/repairorders", clientId);
+
+        var orders = repairOrderService.GetByClientId(clientId);
+
+        if (orders is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(orders);
+    }
+
+    /// <summary>
+    /// Gets all repair orders associated with the car
+    /// </summary>
+    [HttpGet("/api/cars/{carId:int}/repairorders")]
+    public ActionResult<List<RepairOrderDto>> GetByCarId(int carId)
+    {
+        logger.LogInformation("GET /api/cars/{CarId}/repairorders", carId);
+
+        var orders = repairOrderService.GetByCarId(carId);
+
+        if (orders is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(orders);
+    }
+
+    /// <summary>
+    /// Gets repair orders associated with the mechanic
+    /// </summary>
+    [HttpGet("/api/mechanics/{mechanicId:int}/repairorders")]
+    public ActionResult<List<RepairOrderDto>> GetByMechanicId(int mechanicId)
+    {
+        logger.LogInformation("GET /api/mechanics/{MechanicId}/repairorders", mechanicId);
+
+        var orders = repairOrderService.GetByMechanicId(mechanicId);
+
+        if (orders is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(orders);
+    }
+
+    /// <summary>
+    /// Gets repair orders with the work type
+    /// </summary>
+    [HttpGet("/api/work-types/{workTypeId:int}/repairorders")]
+    public ActionResult<List<RepairOrderDto>> GetByWorkTypeId(int workTypeId)
+    {
+        logger.LogInformation("GET /api/work-types/{WorkTypeId}/repairorders", workTypeId);
+
+        var orders = repairOrderService.GetByWorkTypeId(workTypeId);
+
+        if (orders is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(orders);
+    }
+
+    /// <summary>
     /// Creates a new repair order
     /// </summary>
     [HttpPost]
