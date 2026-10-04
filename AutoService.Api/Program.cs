@@ -12,7 +12,6 @@ builder.Services.AddScoped<MechanicService>();
 builder.Services.AddScoped<WorkTypeService>();
 builder.Services.AddScoped<RepairOrderService>();
 
-builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services
