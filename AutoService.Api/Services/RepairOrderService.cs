@@ -133,6 +133,31 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     }
 
     /// <summary>
+    /// Calculates the total cost of a repair order
+    /// </summary>
+    public RepairOrderCostDto? GetTotalCost(int id)
+    {
+        logger.LogInformation("Calculating total cost for repair order with ID {RepairOrderId}", id);
+
+        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+
+        if (order is null)
+        {
+            logger.LogWarning("Repair order with ID {RepairOrderId} was not found", id);
+
+            return null;
+        }
+
+        var totalCost = order.Works.Sum(work => work.WorkType.Cost);
+
+        return new RepairOrderCostDto
+        {
+            RepairOrderId = order.Id,
+            TotalCost = totalCost
+        };
+    }
+
+    /// <summary>
     /// Creates a new repair order
     /// </summary>
     public RepairOrderDto? Create(CreateRepairOrderDto dto)

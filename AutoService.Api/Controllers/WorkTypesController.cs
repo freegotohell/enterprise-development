@@ -43,6 +43,17 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     }
 
     /// <summary>
+    /// Gets the five most frequently performed work types
+    /// </summary>
+    [HttpGet("top5")]
+    public ActionResult<List<FrequentWorkTypeDto>> GetTop5MostFrequent()
+    {
+        logger.LogInformation("GET /api/worktypes/top5");
+
+        return Ok(workTypeService.GetTop5MostFrequent());
+    }
+
+    /// <summary>
     /// Creates a new work type
     /// </summary>
     [HttpPost]

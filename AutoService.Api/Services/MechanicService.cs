@@ -90,6 +90,16 @@ public class MechanicService(
     }
 
     /// <summary>
+    /// Gets mechanics by specialization
+    /// </summary>
+    public List<MechanicDto> GetBySpecialization(MechanicSpecialization specialization)
+    {
+        logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
+
+        return context.Mechanics.Where(mechanic => mechanic.Specialization == specialization).Select(ToDto).ToList();
+    }
+
+    /// <summary>
     /// Creates a new mechanic
     /// </summary>
     public MechanicDto Create(CreateMechanicDto dto)

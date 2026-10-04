@@ -115,6 +115,24 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     }
 
     /// <summary>
+    /// Gets the total cost of a repair order
+    /// </summary>
+    [HttpGet("{id:int}/totalcost")]
+    public ActionResult<RepairOrderCostDto> GetTotalCost(int id)
+    {
+        logger.LogInformation("GET /api/repairorders/{RepairOrderId}/totalcost", id);
+
+        var result = repairOrderService.GetTotalCost(id);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Creates a new repair order
     /// </summary>
     [HttpPost]

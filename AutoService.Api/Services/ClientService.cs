@@ -33,6 +33,27 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     }
 
     /// <summary>
+    /// Gets clients with more than one repair order during the last month
+    /// </summary>
+    public List<RepeatedClientDto> GetRepeatedLastMonth()
+    {
+        logger.LogInformation("Getting clients with repeated repair orders during the last month");
+
+        var monthAgo = DateTime.Now.AddMonths(-1);
+
+        return context.RepairOrders
+            .Where(order => order.AdmissionDate >= monthAgo)
+            .GroupBy(order => order.ClientId)
+            .Where(group => group.Count() > 1)
+            .Select(group => new RepeatedClientDto
+            {
+                ClientId = group.Key,
+                RequestsCount = group.Count()
+            })
+            .ToList();
+    }
+
+    /// <summary>
     /// Creates a new client
     /// </summary>
     public ClientDto Create(CreateClientDto dto)

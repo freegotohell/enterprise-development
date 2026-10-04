@@ -80,6 +80,17 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     }
 
     /// <summary>
+    /// Gets mechanics by specialization
+    /// </summary>
+    [HttpGet("by-specialization")]
+    public ActionResult<List<MechanicDto>> GetBySpecialization([FromQuery] MechanicSpecialization specialization)
+    {
+        logger.LogInformation("GET /api/mechanics/by-specialization?specialization={Specialization}", specialization);
+
+        return Ok(mechanicService.GetBySpecialization(specialization));
+    }
+
+    /// <summary>
     /// Creates a new mechanic
     /// </summary>
     [HttpPost]

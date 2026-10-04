@@ -33,6 +33,27 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
     }
 
     /// <summary>
+    /// Gets five most frequently performed work types
+    /// </summary>
+    public List<FrequentWorkTypeDto> GetTop5MostFrequent()
+    {
+        logger.LogInformation("Getting top 5 most frequently performed work types");
+
+        return context.RepairOrders
+            .SelectMany(order => order.Works)
+            .GroupBy(orderWork => orderWork.WorkType)
+            .Select(group => new FrequentWorkTypeDto
+            {
+                WorkTypeId = group.Key.Id,
+                Name = group.Key.Name,
+                Count = group.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .Take(5)
+            .ToList();
+    }
+
+    /// <summary>
     /// Creates a new work type
     /// </summary>
     public WorkTypeDto Create(CreateWorkTypeDto dto)

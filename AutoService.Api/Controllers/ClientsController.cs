@@ -42,6 +42,17 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     }
 
     /// <summary>
+    /// Gets clients with more than one repair order during the last month
+    /// </summary>
+    [HttpGet("repeated")]
+    public ActionResult<List<RepeatedClientDto>> GetRepeatedLastMonth()
+    {
+        logger.LogInformation("GET /api/clients/repeated");
+
+        return Ok(clientService.GetRepeatedLastMonth());
+    }
+
+    /// <summary>
     /// Creates a new client
     /// </summary>
     [HttpPost]

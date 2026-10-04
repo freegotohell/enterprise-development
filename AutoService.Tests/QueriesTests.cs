@@ -1,64 +1,75 @@
 using AutoService.Domain.Shared.Enums;
 using AutoService.Tests.Fixtures;
+using AutoService.Api.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AutoService.Tests;
 
 /// <summary>
 /// Contains tests for LINQ queries over the AutoService domain model.
 /// </summary>
-public class QueriesTests(AutoServiceFixture fixture)
-: IClassFixture<AutoServiceFixture>
+public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoServiceFixture>
 {
     /// <summary>
-    /// Verifies that mechanics can be filtered by their specialization.
+    /// Verifies that mechanics can be filtered by their specialization through the service
     /// </summary>
     [Fact]
-    public void ReturnMechanicsByWorkType()
+    public void ReturnMechanicsBySpecialization()
     {
         var context = fixture.Context;
         var specialization = MechanicSpecialization.Engine;
 
-        var mechanics = context.Mechanics
+        var expected = context.Mechanics
             .Where(mechanic => mechanic.Specialization == specialization)
+            .Select(mechanic => mechanic.Id)
+            .OrderBy(id => id)
             .ToList();
 
-        Assert.NotEmpty(mechanics);
+        var service = new MechanicService(context, NullLogger<MechanicService>.Instance);
 
-        Assert.All(mechanics, mechanic => Assert.Equal(specialization, mechanic.Specialization));
+        var actual = service.GetBySpecialization(specialization).Select(mechanic => mechanic.Id).OrderBy(id => id).ToList();
+
+        Assert.Equal(expected, actual);
     }
 
     /// <summary>
-    /// Verifies that clients associated with a mechanic can be retrieved and sorted by name.
+    /// Verifies that clients associated with a mechanic can be retrieved and sorted by name through the service
     /// </summary>
     [Fact]
-    public void ReturnClientsByMechanic()
+    public void ClientsByMechanic()
     {
         var context = fixture.Context;
 
         var mechanic = context.Mechanics.First();
 
-        var clients = context.RepairOrders
+        var expected = context.RepairOrders
             .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanic.Id))
             .Select(order => order.Client)
             .Distinct()
             .OrderBy(client => client.FullName)
+            .Select(client => client.Id)
             .ToList();
 
-        Assert.NotEmpty(clients);
+        var service = new MechanicService(context, NullLogger<MechanicService>.Instance);
 
-        Assert.True(clients.SequenceEqual(clients.OrderBy(x => x.FullName)));
+        var actual = service.GetClients(mechanic.Id)!
+            .OrderBy(client => client.FullName)
+            .Select(client => client.Id)
+            .ToList();
+
+        Assert.Equal(expected, actual);
     }
 
     /// <summary>
-    /// Verifies that clients with more than one repair request during the last month are returned.
+    /// Verifies that clients with more than one repair request during the last month are returned through the service
     /// </summary>
     [Fact]
-    public void CountRepeatedClientRequestsLastMonth()
+    public void ReturnClientsWithRepeatedRequestsLastMonth()
     {
         var context = fixture.Context;
         var monthAgo = DateTime.Now.AddMonths(-1);
 
-        var repeatedClients = context.RepairOrders
+        var expected = context.RepairOrders
             .Where(order => order.AdmissionDate >= monthAgo)
             .GroupBy(order => order.ClientId)
             .Where(group => group.Count() > 1)
@@ -67,56 +78,75 @@ public class QueriesTests(AutoServiceFixture fixture)
                 ClientId = group.Key,
                 RequestsCount = group.Count()
             })
+            .OrderBy(x => x.ClientId)
             .ToList();
 
-        Assert.NotEmpty(repeatedClients);
+        var service = new ClientService(context, NullLogger<ClientService>.Instance);
 
-        Assert.All(repeatedClients, client => Assert.True(client.RequestsCount > 1));
+        var actual = service.GetRepeatedLastMonth()
+            .Select(client => new
+            {
+                ClientId = client.ClientId,
+                RequestsCount = client.RequestsCount
+            })
+            .OrderBy(x => x.ClientId)
+            .ToList();
+
+        Assert.Equal(expected, actual);
     }
 
     /// <summary>
-    /// Verifies that the total cost of an order is calculated from its associated work items.
+    /// Verifies that the total cost of an order is calculated from its associated work items through the service
     /// </summary>
     [Fact]
-    public void CalculateTotalCostForOrder()
+    public void TotalCostForOrder()
     {
         var context = fixture.Context;
-
         var order = context.RepairOrders.First();
 
-        var totalCost = order.Works.Sum(work => work.WorkType.Cost);
+        var expected = order.Works.Sum(work => work.WorkType.Cost);
 
-        var expectedCost = order.Works.Select(work => work.WorkType.Cost).Sum();
+        var service = new RepairOrderService(context, NullLogger<RepairOrderService>.Instance);
 
-        Assert.Equal(expectedCost, totalCost);
-        Assert.True(totalCost > 0);
+        var actual = service.GetTotalCost(order.Id);
+
+        Assert.NotNull(actual);
+        Assert.Equal(order.Id, actual.RepairOrderId);
+        Assert.Equal(expected, actual.TotalCost);
     }
 
     /// <summary>
-    /// Verifies that the five most frequently performed work types are returned in descending order.
+    /// Verifies that the five most frequently performed work types are returned in descending order through the service
     /// </summary>
     [Fact]
-    public void ReturnTop5MostFrequentWorkTypes()
+    public void Top5MostFrequentWorkTypes()
     {
         var context = fixture.Context;
 
-        var topWorks = context.RepairOrders
+        var expected = context.RepairOrders
             .SelectMany(order => order.Works)
-            .GroupBy(orderWork => orderWork.WorkType)
+            .GroupBy(orderWork => orderWork.WorkTypeId)
             .Select(group => new
             {
-                WorkType = group.Key,
+                WorkTypeId = group.Key,
                 Count = group.Count()
             })
             .OrderByDescending(x => x.Count)
             .Take(5)
             .ToList();
 
-        Assert.Equal(5, topWorks.Count);
+        var service = new WorkTypeService(
+            context,
+            NullLogger<WorkTypeService>.Instance);
 
-        Assert.All(topWorks, work => Assert.True(work.Count > 0));
+        var actual = service.GetTop5MostFrequent()
+            .Select(work => new
+            {
+                WorkTypeId = work.WorkTypeId,
+                Count = work.Count
+            })
+            .ToList();
 
-        Assert.True(topWorks.SequenceEqual(topWorks.OrderByDescending(x => x.Count)));
+        Assert.Equal(expected, actual);
     }
-
 }
