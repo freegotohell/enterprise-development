@@ -1,10 +1,12 @@
-# Разработка корпоративных приложений — лабораторная работа №1
+# Разработка корпоративных приложений — лабораторная работа №2
 
-## «Классы»
+## «Сервер — REST API»
 
-В рамках первой лабораторной работы реализована объектно-ориентированная модель **автосервиса**, подготовлены тестовые данные и unit-тесты с использованием LINQ.
+В рамках второй лабораторной работы для предметной области автосервиса реализовано серверное приложение с использованием **ASP.NET Core Web API**.
 
-Данные хранятся **в памяти в виде коллекций**. Для генерации тестовых данных используется библиотека **Bogus**.
+Сервер предоставляет REST API для выполнения CRUD-операций над сущностями первой лабораторной работы, операций получения связанных данных и аналитических запросов.
+
+Данные по-прежнему хранятся **в памяти в виде коллекций**.
 
 Вариант: 57
 
@@ -23,10 +25,12 @@
 | `Mechanic` | Механик автосервиса |
 | `WorkType` | Вид выполняемой работы |
 | `RepairOrder` | Заказ на ремонт |
-| `OrderWork` | Работа, включённая в заказ |
+| `OrderWork` | Связь заказа с выполняемой работой |
 | `OrderMechanic` | Связь заказа с механиком |
 
 ### Перечисления
+
+Перечисления вынесены в отдельный проект `AutoService.Domain.Shared`.
 
 `MechanicSpecialization` — специализация механика:
 
@@ -45,6 +49,15 @@
 - `BodyRepair`
 - `Maintenance`
 
+`Maintenance` используется для общих регламентных работ. При подборе механиков такая категория может быть сопоставлена с несколькими специализациями.
+
+Для результатов удаления используется `DeleteResult`:
+
+- `Deleted`
+- `NotFound`
+- `HasRelatedEntities`
+
+Сущность не удаляется, если её удаление нарушило бы историю ремонтных заказов.
 ---
 
 ## Связи между сущностями
@@ -62,36 +75,105 @@ Client
 - один `Client` может иметь несколько автомобилей;
 - один `Car` может иметь несколько заказов на ремонт;
 - `RepairOrder` связан с клиентом и автомобилем;
-- заказ содержит выполняемые работы через `OrderWork`;
-- заказ связан с механиками через `OrderMechanic`.
+- заказ может содержать несколько работ через `OrderWork`;
+- заказ может быть связан с несколькими механиками через `OrderMechanic`.
 
 ---
 
-## Данные и DataSeeder
+## REST API
 
-Класс `AutoServiceContext` содержит коллекции:
+Для основных сущностей реализован полный CRUD.
 
-```csharp
-public List<Client> Clients { get; set; } = [];
-public List<Car> Cars { get; set; } = [];
-public List<Mechanic> Mechanics { get; set; } = [];
-public List<WorkType> WorkTypes { get; set; } = [];
-public List<RepairOrder> RepairOrders { get; set; } = [];
+### Clients
+
+```text
+GET    /api/clients
+GET    /api/clients/{id}
+POST   /api/clients
+PUT    /api/clients/{id}
+DELETE /api/clients/{id}
 ```
 
-Начальное заполнение выполняется методом:
+Дополнительные запросы:
 
-```csharp
-DataSeeder.Seed()
+```text
+GET /api/clients/{clientId}/cars
+GET /api/clients/{clientId}/repairorders
+GET /api/clients/repeated
 ```
 
-В датасете создаются:
+### Cars
 
-- 10 клиентов;
-- 10 автомобилей;
-- 10 механиков;
-- 10 видов работ;
-- 20 заказов на ремонт.
+```text
+GET    /api/cars
+GET    /api/cars/{id}
+POST   /api/cars
+PUT    /api/cars/{id}
+DELETE /api/cars/{id}
+```
+
+Дополнительный запрос:
+
+```text
+GET /api/clients/{clientId}/cars
+```
+
+### Mechanics
+
+```text
+GET    /api/mechanics
+GET    /api/mechanics/{id}
+POST   /api/mechanics
+PUT    /api/mechanics/{id}
+DELETE /api/mechanics/{id}
+```
+
+Дополнительные запросы:
+
+```text
+GET /api/mechanics/{mechanicId}/clients
+GET /api/mechanics/{mechanicId}/repairorders
+GET /api/worktypes/{workTypeId}/mechanics
+GET /api/mechanics/by-specialization?specialization=Engine
+```
+
+### WorkTypes
+
+```text
+GET    /api/worktypes
+GET    /api/worktypes/{id}
+POST   /api/worktypes
+PUT    /api/worktypes/{id}
+DELETE /api/worktypes/{id}
+```
+
+Дополнительные запросы:
+
+```text
+GET /api/worktypes/{workTypeId}/repairorders
+GET /api/worktypes/top5
+```
+
+### RepairOrders
+
+```text
+GET    /api/repairorders
+GET    /api/repairorders/{id}
+POST   /api/repairorders
+PUT    /api/repairorders/{id}
+DELETE /api/repairorders/{id}
+```
+
+Дополнительные запросы:
+
+```text
+GET /api/clients/{clientId}/repairorders
+GET /api/cars/{carId}/repairorders
+GET /api/mechanics/{mechanicId}/repairorders
+GET /api/worktypes/{workTypeId}/repairorders
+GET /api/repairorders/{id}/totalcost
+```
+
 
 ---
 
@@ -99,23 +181,39 @@ DataSeeder.Seed()
 
 Тесты находятся в проекте `AutoService.Tests`.
 
-Для повторного использования одного набора данных используется `AutoServiceFixture`. При создании fixture вызывается `DataSeeder.Seed()`, после чего полученный `AutoServiceContext` используется тестами.
-
 ### `DomainTests`
 
-Тесты проверяют корректность созданного датасета и основных связей.
+Проверяют корректность тестовых данных и основных связей предметной области.
 
 ### `QueriesTests`
 
-В тестах реализованы LINQ-запросы.
+Сравнивают результаты аналитических LINQ-запросов и результаты их реализации через сервисы.
 
 ---
 
-## Запуск тестов
+## Тестовые данные
+
+Для генерации тестовых данных используется `DataSeeder`.
+
+Начальный набор данных содержит:
+
+- 10 клиентов;
+- 10 автомобилей;
+- 10 механиков;
+- 10 видов работ;
+- 20 заказов на ремонт.
+
+
+---
+
+## Запуск проекта
 
 ```powershell
-dotnet test
+dotnet run --project .\AutoService.Api
 ```
 
+---
+
 ## Результаты
-![Результаты тестов](pic/Screenshot.png)
+
+![Результаты тестов](pic/Screenshot2.png)
