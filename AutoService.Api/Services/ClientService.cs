@@ -27,7 +27,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     {
         logger.LogInformation("Getting client with ID {ClientId}", id);
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == id);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == id);
 
         return client is null ? null : ToDto(client);
     }
@@ -39,7 +39,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     {
         logger.LogInformation("Getting clients with repeated repair orders during the last month");
 
-        var monthAgo = DateTime.Now.AddMonths(-1);
+        DateTime monthAgo = DateTime.Now.AddMonths(-1);
 
         return context.RepairOrders
             .Where(order => order.AdmissionDate >= monthAgo)
@@ -81,7 +81,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     {
         logger.LogInformation("Updating client with ID {ClientId}", id);
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == id);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == id);
 
         if (client is null)
         {
@@ -105,7 +105,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     {
         logger.LogInformation("Deleting client with ID {ClientId}", id);
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == id);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == id);
 
         if (client is null)
         {

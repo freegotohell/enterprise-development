@@ -27,7 +27,7 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
     {
         logger.LogInformation("Getting work type with ID {WorkTypeId}", id);
 
-        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         return workType is null ? null : ToDto(workType);
     }
@@ -84,7 +84,7 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
     {
         logger.LogInformation("Updating work type with ID {WorkTypeId}", id);
 
-        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         if (workType is null)
         {
@@ -111,13 +111,13 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
     {
         logger.LogInformation("Deleting work type with ID {WorkTypeId}", id);
 
-        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         if (workType is null)
         {
             logger.LogWarning("Work type with ID {WorkTypeId} was not found", id);
 
-            return DeleteResult.NotFound; 
+            return DeleteResult.NotFound;
         }
 
         if (workType.Orders.Count > 0)

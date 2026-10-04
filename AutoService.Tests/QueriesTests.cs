@@ -2,13 +2,16 @@ using AutoService.Domain.Shared.Enums;
 using AutoService.Tests.Fixtures;
 using AutoService.Api.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using AutoService.Domain.Data;
+using AutoService.Domain.Entities;
+using AutoService.Contracts.DTOs;
 
 namespace AutoService.Tests;
 
 /// <summary>
 /// Contains tests for LINQ queries over the AutoService domain model.
 /// </summary>
-public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoServiceFixture>
+public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServiceFixture>
 {
     /// <summary>
     /// Verifies that mechanics can be filtered by their specialization through the service
@@ -16,8 +19,8 @@ public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoService
     [Fact]
     public void ReturnMechanicsBySpecialization()
     {
-        var context = fixture.Context;
-        var specialization = MechanicSpecialization.Engine;
+        AutoServiceContext context = fixture.Context;
+        MechanicSpecialization specialization = MechanicSpecialization.Engine;
 
         var expected = context.Mechanics
             .Where(mechanic => mechanic.Specialization == specialization)
@@ -38,9 +41,9 @@ public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoService
     [Fact]
     public void ClientsByMechanic()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
-        var mechanic = context.Mechanics.First();
+        Mechanic mechanic = context.Mechanics.First();
 
         var expected = context.RepairOrders
             .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanic.Id))
@@ -66,8 +69,8 @@ public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoService
     [Fact]
     public void ReturnClientsWithRepeatedRequestsLastMonth()
     {
-        var context = fixture.Context;
-        var monthAgo = DateTime.Now.AddMonths(-1);
+        AutoServiceContext context = fixture.Context;
+        DateTime monthAgo = DateTime.Now.AddMonths(-1);
 
         var expected = context.RepairOrders
             .Where(order => order.AdmissionDate >= monthAgo)
@@ -101,14 +104,14 @@ public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoService
     [Fact]
     public void TotalCostForOrder()
     {
-        var context = fixture.Context;
-        var order = context.RepairOrders.First();
+        AutoServiceContext context = fixture.Context;
+        RepairOrder order = context.RepairOrders.First();
 
         var expected = order.Works.Sum(work => work.WorkType.Cost);
 
         var service = new RepairOrderService(context, NullLogger<RepairOrderService>.Instance);
 
-        var actual = service.GetTotalCost(order.Id);
+        RepairOrderCostDto? actual = service.GetTotalCost(order.Id);
 
         Assert.NotNull(actual);
         Assert.Equal(order.Id, actual.RepairOrderId);
@@ -121,7 +124,7 @@ public class QueriesTests(AutoServiceFixture fixture): IClassFixture<AutoService
     [Fact]
     public void Top5MostFrequentWorkTypes()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         var expected = context.RepairOrders
             .SelectMany(order => order.Works)

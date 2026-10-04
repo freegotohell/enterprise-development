@@ -1,7 +1,6 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
 using AutoService.Domain.Shared.Results;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -32,7 +31,7 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     {
         logger.LogInformation("GET /api/worktypes/{WorkTypeId}", id);
 
-        var workType = workTypeService.GetById(id);
+        WorkTypeDto? workType = workTypeService.GetById(id);
 
         if (workType is null)
         {
@@ -61,7 +60,7 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     {
         logger.LogInformation("POST /api/worktypes");
 
-        var workType = workTypeService.Create(dto);
+        WorkTypeDto? workType = workTypeService.Create(dto);
 
         if (workType is null)
         {
@@ -79,7 +78,7 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     {
         logger.LogInformation("PUT /api/worktypes/{WorkTypeId}", id);
 
-        var workType = workTypeService.Update(id, dto);
+        WorkTypeDto? workType = workTypeService.Update(id, dto);
 
         if (workType is null)
         {
@@ -97,7 +96,7 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     {
         logger.LogInformation("DELETE /api/worktypes/{WorkTypeId}", id);
 
-        var result = workTypeService.Delete(id);
+        DeleteResult result = workTypeService.Delete(id);
 
         return result switch
         {

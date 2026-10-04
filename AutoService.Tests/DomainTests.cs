@@ -1,3 +1,4 @@
+using AutoService.Domain.Data;
 using AutoService.Tests.Fixtures;
 
 namespace AutoService.Tests;
@@ -14,7 +15,7 @@ public class DomainTests(AutoServiceFixture fixture)
     [Fact]
     public void SeederShouldCreateEnoughData()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         Assert.True(context.Clients.Count >= 10);
         Assert.True(context.Cars.Count >= 10);
@@ -29,7 +30,7 @@ public class DomainTests(AutoServiceFixture fixture)
     [Fact]
     public void SeederShouldCreateCarsWithClients()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         var carsWithoutClient = context.Cars.Count(car => car.Client == null);
 
@@ -42,7 +43,7 @@ public class DomainTests(AutoServiceFixture fixture)
     [Fact]
     public void SeederShouldCreateRepairOrdersWithRelations()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         var invalidOrders = context.RepairOrders
             .Count(order => order.Car == null || order.Client == null);
@@ -56,7 +57,7 @@ public class DomainTests(AutoServiceFixture fixture)
     [Fact]
     public void RepairOrdersShouldHaveMechanics()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         var ordersWithoutMechanics = context.RepairOrders
             .Count(order => order.Mechanics.Count == 0);
@@ -70,7 +71,7 @@ public class DomainTests(AutoServiceFixture fixture)
     [Fact]
     public void RepairOrdersShouldHaveWorks()
     {
-        var context = fixture.Context;
+        AutoServiceContext context = fixture.Context;
 
         var ordersWithoutWorks = context.RepairOrders
             .Count(order => order.Works.Count == 0);

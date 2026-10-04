@@ -2,7 +2,7 @@ using AutoService.Domain.Data;
 using AutoService.Api.Services;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddSingleton(DataSeeder.Seed());
@@ -23,7 +23,7 @@ builder.Services
             new JsonStringEnumConverter());
     });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

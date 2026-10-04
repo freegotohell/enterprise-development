@@ -1,7 +1,6 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
 using AutoService.Domain.Shared.Results;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -32,7 +31,7 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("GET /api/cars/{CarId}", id);
 
-        var car = carService.GetById(id);
+        CarDto? car = carService.GetById(id);
 
         if (car is null)
         {
@@ -50,7 +49,7 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("GET /api/clients/{ClientId}/cars", clientId);
 
-        var cars = carService.GetByClientId(clientId);
+        List<CarDto>? cars = carService.GetByClientId(clientId);
 
         if (cars is null)
         {
@@ -68,7 +67,7 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("POST /api/cars");
 
-        var car = carService.Create(dto);
+        CarDto? car = carService.Create(dto);
 
         if (car is null)
         {
@@ -86,7 +85,7 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("PUT /api/cars/{CarId}", id);
 
-        var car = carService.Update(id, dto);
+        CarDto? car = carService.Update(id, dto);
 
         if (car is null)
         {
@@ -104,7 +103,7 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("DELETE /api/cars/{CarId}", id);
 
-        var result = carService.Delete(id);
+        DeleteResult result = carService.Delete(id);
 
         return result switch
         {

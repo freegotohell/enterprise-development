@@ -2,7 +2,6 @@
 using AutoService.Contracts.DTOs;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Domain.Shared.Results;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -33,7 +32,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("GET /api/mechanics/{MechanicId}", id);
 
-        var mechanic = mechanicService.GetById(id);
+        MechanicDto? mechanic = mechanicService.GetById(id);
 
         if (mechanic is null)
         {
@@ -51,7 +50,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("GET /api/mechanics/{MechanicId}/clients", id);
 
-        var clients = mechanicService.GetClients(id);
+        List<ClientDto>? clients = mechanicService.GetClients(id);
 
         if (clients is null)
         {
@@ -69,7 +68,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("GET /api/worktypes/{WorkTypeId}/mechanics", workTypeId);
 
-        var mechanics = mechanicService.GetByWorkTypeId(workTypeId);
+        List<MechanicDto>? mechanics = mechanicService.GetByWorkTypeId(workTypeId);
 
         if (mechanics is null)
         {
@@ -98,7 +97,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("POST /api/mechanics");
 
-        var mechanic = mechanicService.Create(dto);
+        MechanicDto mechanic = mechanicService.Create(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = mechanic.Id }, mechanic);
     }
@@ -111,7 +110,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("PUT /api/mechanics/{MechanicId}", id);
 
-        var mechanic = mechanicService.Update(id, dto);
+        MechanicDto? mechanic = mechanicService.Update(id, dto);
 
         if (mechanic is null)
         {
@@ -129,7 +128,7 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("DELETE /api/mechanics/{MechanicId}", id);
 
-        var result = mechanicService.Delete(id);
+        DeleteResult result = mechanicService.Delete(id);
 
         return result switch
         {

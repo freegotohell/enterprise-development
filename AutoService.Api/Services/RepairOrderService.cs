@@ -27,7 +27,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Getting repair order with ID {RepairOrderId}", id);
 
-        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         return order is null ? null : ToDto(order);
     }
@@ -139,7 +139,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Calculating total cost for repair order with ID {RepairOrderId}", id);
 
-        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         if (order is null)
         {
@@ -164,7 +164,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Creating a new repair order");
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
 
         if (client is null)
         {
@@ -173,7 +173,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             return null;
         }
 
-        var car = context.Cars.FirstOrDefault(x => x.Id == dto.CarId);
+        Car? car = context.Cars.FirstOrDefault(x => x.Id == dto.CarId);
 
         if (car is null)
         {
@@ -219,7 +219,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
         client.Orders.Add(order);
         car.Orders.Add(order);
 
-        foreach (var mechanic in mechanics)
+        foreach (Mechanic? mechanic in mechanics)
         {
             var orderMechanic = new OrderMechanic
             {
@@ -234,7 +234,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             mechanic.Orders.Add(orderMechanic);
         }
 
-        foreach (var workType in workTypes)
+        foreach (WorkType? workType in workTypes)
         {
             var orderWork = new OrderWork
             {
@@ -261,7 +261,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Updating repair order with ID {RepairOrderId}", id);
 
-        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         if (order is null)
         {
@@ -270,7 +270,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             return null;
         }
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
 
         if (client is null)
         {
@@ -279,7 +279,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             return null;
         }
 
-        var car = context.Cars
+        Car? car = context.Cars
             .FirstOrDefault(x => x.Id == dto.CarId);
 
         if (car is null)
@@ -310,12 +310,12 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
         order.Client?.Orders.Remove(order);
         order.Car?.Orders.Remove(order);
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Mechanic?.Orders.Remove(orderMechanic);
         }
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.WorkType?.Orders.Remove(orderWork);
         }
@@ -335,7 +335,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
         client.Orders.Add(order);
         car.Orders.Add(order);
 
-        foreach (var mechanic in mechanics)
+        foreach (Mechanic? mechanic in mechanics)
         {
             var orderMechanic = new OrderMechanic
             {
@@ -350,7 +350,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
             mechanic.Orders.Add(orderMechanic);
         }
 
-        foreach (var workType in workTypes)
+        foreach (WorkType? workType in workTypes)
         {
             var orderWork = new OrderWork
             {
@@ -377,7 +377,7 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
     {
         logger.LogInformation("Deleting repair order with ID {RepairOrderId}", id);
 
-        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         if (order is null)
         {
@@ -389,12 +389,12 @@ public class RepairOrderService(AutoServiceContext context, ILogger<RepairOrderS
         order.Client?.Orders.Remove(order);
         order.Car?.Orders.Remove(order);
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Mechanic?.Orders.Remove(orderMechanic);
         }
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.WorkType?.Orders.Remove(orderWork);
         }

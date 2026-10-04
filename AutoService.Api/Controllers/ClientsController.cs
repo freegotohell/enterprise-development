@@ -31,7 +31,7 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     {
         logger.LogInformation("GET /api/clients/{ClientId}", id);
 
-        var client = clientService.GetById(id);
+        ClientDto? client = clientService.GetById(id);
 
         if (client is null)
         {
@@ -60,7 +60,7 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     {
         logger.LogInformation("POST /api/clients");
 
-        var client = clientService.Create(dto);
+        ClientDto client = clientService.Create(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = client.Id }, client);
     }
@@ -73,7 +73,7 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     {
         logger.LogInformation("PUT /api/clients/{ClientId}", id);
 
-        var client = clientService.Update(id, dto);
+        ClientDto? client = clientService.Update(id, dto);
 
         if (client is null)
         {
@@ -91,7 +91,7 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     {
         logger.LogInformation("DELETE /api/clients/{ClientId}", id);
 
-        var result = clientService.Delete(id);
+        DeleteResult result = clientService.Delete(id);
 
         return result switch
         {

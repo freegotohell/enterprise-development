@@ -31,7 +31,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanic with ID {MechanicId}", id);
 
-        var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
 
         return mechanic is null ? null : ToDto(mechanic);
     }
@@ -73,7 +73,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics for work type with ID {WorkTypeId}", workTypeId);
 
-        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == workTypeId);
+        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == workTypeId);
 
         if (workType is null)
         {
@@ -129,7 +129,7 @@ public class MechanicService(
     {
         logger.LogInformation("Updating mechanic with ID {MechanicId}", id);
 
-        var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
 
         if (mechanic is null)
         {
@@ -155,7 +155,7 @@ public class MechanicService(
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
-        var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
 
         if (mechanic is null)
         {

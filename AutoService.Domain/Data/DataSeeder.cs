@@ -30,7 +30,7 @@ public static class DataSeeder
     /// </summary>
     private static void CreateClients(AutoServiceContext context)
     {
-        var clientFaker = new Faker<Client>()
+        Faker<Client> clientFaker = new Faker<Client>()
             .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(x => x.FullName, f => f.Person.FullName)
             .RuleFor(x => x.Phone, f => f.Phone.PhoneNumber());
@@ -43,14 +43,14 @@ public static class DataSeeder
     /// </summary>
     private static void CreateMechanics(AutoServiceContext context)
     {
-        var mechanicFaker = new Faker<Mechanic>()
+        Faker<Mechanic> mechanicFaker = new Faker<Mechanic>()
             .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(x => x.PassportNumber, f => f.Random.Replace("##########"))
             .RuleFor(x => x.FullName, f => f.Person.FullName)
             .RuleFor(x => x.Experience, f => f.Random.Int(1, 30))
             .RuleFor(
                 x => x.Specialization,
-                f =>(MechanicSpecialization)(
+                f => (MechanicSpecialization)(
                     f.IndexFaker % Enum.GetValues<MechanicSpecialization>().Length));
 
         context.Mechanics.AddRange(mechanicFaker.Generate(10));
@@ -172,7 +172,7 @@ public static class DataSeeder
     /// </summary>
     private static void CreateCars(AutoServiceContext context)
     {
-        var carFaker = new Faker<Car>()
+        Faker<Car> carFaker = new Faker<Car>()
             .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(
                 x => x.LicensePlate,
@@ -183,9 +183,9 @@ public static class DataSeeder
             .RuleFor(x => x.ClientId, f => f.PickRandom(context.Clients).Id)
             .RuleFor(x => x.Client, (f, x) => context.Clients.First(c => c.Id == x.ClientId));
 
-        var cars = carFaker.Generate(10);
+        List<Car> cars = carFaker.Generate(10);
 
-        foreach (var car in cars)
+        foreach (Car car in cars)
         {
             car.Client.Cars.Add(car);
         }
@@ -198,7 +198,7 @@ public static class DataSeeder
     /// </summary>
     private static void CreateOrders(AutoServiceContext context)
     {
-        var orderFaker = new Faker<RepairOrder>()
+        Faker<RepairOrder> orderFaker = new Faker<RepairOrder>()
             .RuleFor(x => x.Id, f => f.IndexFaker + 1)
             .RuleFor(x => x.CarId, f => f.PickRandom(context.Cars).Id)
             .RuleFor(
@@ -212,12 +212,12 @@ public static class DataSeeder
                 (f, order) => order.AdmissionDate.AddDays(f.Random.Int(1, 7)));
 
 
-        var orders = orderFaker.Generate(20);
+        List<RepairOrder> orders = orderFaker.Generate(20);
 
-        foreach (var order in orders)
+        foreach (RepairOrder order in orders)
         {
             order.Client = context.Clients.First(x => x.Id == order.ClientId);
-            order.Car =context.Cars.First(x => x.Id == order.CarId);
+            order.Car = context.Cars.First(x => x.Id == order.CarId);
 
             order.Car.Orders.Add(order);
             order.Client.Orders.Add(order);
@@ -264,7 +264,7 @@ public static class DataSeeder
         if (order.Works.Any(work =>
                 work.WorkType.Category == WorkCategory.Maintenance))
         {
-            var randomMechanic = context.Mechanics.OrderBy(_ => Guid.NewGuid()).First();
+            Mechanic randomMechanic = context.Mechanics.OrderBy(_ => Guid.NewGuid()).First();
 
             if (!mechanics.Any(mechanic => mechanic.Id == randomMechanic.Id))
             {
@@ -272,7 +272,7 @@ public static class DataSeeder
             }
         }
 
-        foreach (var mechanic in mechanics)
+        foreach (Mechanic? mechanic in mechanics)
         {
             var orderMechanic = new OrderMechanic
             {
@@ -295,7 +295,7 @@ public static class DataSeeder
     {
         var works = context.WorkTypes.OrderBy(_ => Guid.NewGuid()).Take(3).ToList();
 
-        foreach (var work in works)
+        foreach (WorkType? work in works)
         {
             var orderWork = new OrderWork
             {

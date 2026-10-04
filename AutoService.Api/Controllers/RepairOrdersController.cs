@@ -1,7 +1,6 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
 using AutoService.Domain.Shared.Results;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -32,7 +31,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/repairorders/{RepairOrderId}", id);
 
-        var order = repairOrderService.GetById(id);
+        RepairOrderDto? order = repairOrderService.GetById(id);
 
         if (order is null)
         {
@@ -50,7 +49,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/clients/{ClientId}/repairorders", clientId);
 
-        var orders = repairOrderService.GetByClientId(clientId);
+        List<RepairOrderDto>? orders = repairOrderService.GetByClientId(clientId);
 
         if (orders is null)
         {
@@ -68,7 +67,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/cars/{CarId}/repairorders", carId);
 
-        var orders = repairOrderService.GetByCarId(carId);
+        List<RepairOrderDto>? orders = repairOrderService.GetByCarId(carId);
 
         if (orders is null)
         {
@@ -86,7 +85,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/mechanics/{MechanicId}/repairorders", mechanicId);
 
-        var orders = repairOrderService.GetByMechanicId(mechanicId);
+        List<RepairOrderDto>? orders = repairOrderService.GetByMechanicId(mechanicId);
 
         if (orders is null)
         {
@@ -104,7 +103,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/worktypes/{WorkTypeId}/repairorders", workTypeId);
 
-        var orders = repairOrderService.GetByWorkTypeId(workTypeId);
+        List<RepairOrderDto>? orders = repairOrderService.GetByWorkTypeId(workTypeId);
 
         if (orders is null)
         {
@@ -122,7 +121,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("GET /api/repairorders/{RepairOrderId}/totalcost", id);
 
-        var result = repairOrderService.GetTotalCost(id);
+        RepairOrderCostDto? result = repairOrderService.GetTotalCost(id);
 
         if (result is null)
         {
@@ -140,7 +139,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("POST /api/repairorders");
 
-        var order = repairOrderService.Create(dto);
+        RepairOrderDto? order = repairOrderService.Create(dto);
 
         if (order is null)
         {
@@ -158,7 +157,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("PUT /api/repairorders/{RepairOrderId}", id);
 
-        var order = repairOrderService.Update(id, dto);
+        RepairOrderDto? order = repairOrderService.Update(id, dto);
 
         if (order is null)
         {
@@ -176,7 +175,7 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("DELETE /api/repairorders/{RepairOrderId}", id);
 
-        var result = repairOrderService.Delete(id);
+        DeleteResult result = repairOrderService.Delete(id);
 
         return result switch
         {

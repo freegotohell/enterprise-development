@@ -27,7 +27,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     {
         logger.LogInformation("Getting car with ID {CarId}", id);
 
-        var car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
 
         return car is null ? null : ToDto(car);
     }
@@ -39,7 +39,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     {
         logger.LogInformation("Creating a car for client with ID {ClientId}", dto.ClientId);
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
 
         if (client is null)
         {
@@ -74,7 +74,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     {
         logger.LogInformation("Updating car with ID {CarId}", id);
 
-        var car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
 
         if (car is null)
         {
@@ -83,7 +83,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
             return null;
         }
 
-        var client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
 
         if (client is null)
         {
@@ -94,7 +94,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
 
         if (car.ClientId != client.Id)
         {
-            var oldClient = car.Client;
+            Client oldClient = car.Client;
 
             oldClient?.Cars.Remove(car);
             client.Cars.Add(car);
@@ -120,7 +120,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     {
         logger.LogInformation("Deleting car with ID {CarId}", id);
 
-        var car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
 
         if (car is null)
         {
@@ -149,7 +149,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     /// </summary>
     public List<CarDto>? GetByClientId(int clientId)
     {
-        logger.LogInformation( "Getting cars for client with ID {ClientId}", clientId);
+        logger.LogInformation("Getting cars for client with ID {ClientId}", clientId);
 
         var clientExists = context.Clients.Any(x => x.Id == clientId);
 
