@@ -1,5 +1,8 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Domain.Shared.Enums;
+using AutoService.Domain.Shared.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -59,6 +62,24 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     }
 
     /// <summary>
+    /// Gets mechanics associated with a specific work type
+    /// </summary>
+    [HttpGet("/api/worktypes/{workTypeId:int}/mechanics")]
+    public ActionResult<List<MechanicDto>> GetByWorkTypeId(int workTypeId)
+    {
+        logger.LogInformation("GET /api/worktypes/{WorkTypeId}/mechanics", workTypeId);
+
+        var mechanics = mechanicService.GetByWorkTypeId(workTypeId);
+
+        if (mechanics is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(mechanics);
+    }
+
+    /// <summary>
     /// Creates a new mechanic
     /// </summary>
     [HttpPost]
@@ -67,11 +88,6 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
         logger.LogInformation("POST /api/mechanics");
 
         var mechanic = mechanicService.Create(dto);
-
-        if (mechanic is null)
-        {
-            return BadRequest();
-        }
 
         return CreatedAtAction(nameof(GetById), new { id = mechanic.Id }, mechanic);
     }
@@ -102,13 +118,14 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     {
         logger.LogInformation("DELETE /api/mechanics/{MechanicId}", id);
 
-        var deleted = mechanicService.Delete(id);
+        var result = mechanicService.Delete(id);
 
-        if (!deleted)
+        return result switch
         {
-            return NotFound();
-        }
-
-        return NoContent();
+            DeleteResult.Deleted => NoContent(),
+            DeleteResult.NotFound => NotFound(),
+            DeleteResult.HasRelatedEntities => Conflict(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }

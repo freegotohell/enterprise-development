@@ -1,6 +1,7 @@
 using AutoService.Contracts.DTOs;
 using AutoService.Domain.Data;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Shared.Results;
 
 namespace AutoService.Api.Services;
 
@@ -79,7 +80,7 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
     /// <summary>
     /// Deletes a client by id
     /// </summary>
-    public bool Delete(int id)
+    public DeleteResult Delete(int id)
     {
         logger.LogInformation("Deleting client with ID {ClientId}", id);
 
@@ -89,14 +90,21 @@ public class ClientService(AutoServiceContext context, ILogger<ClientService> lo
         {
             logger.LogWarning("Client with ID {ClientId} was not found", id);
 
-            return false;
+            return DeleteResult.NotFound;
+        }
+
+        if (client.Cars.Count > 0 || client.Orders.Count > 0)
+        {
+            logger.LogWarning("Cannot delete client with ID {ClientId} because it has related cars or repair orders", id);
+
+            return DeleteResult.HasRelatedEntities;
         }
 
         context.Clients.Remove(client);
 
         logger.LogInformation("Client with ID {ClientId} was deleted", id);
 
-        return true;
+        return DeleteResult.Deleted;
     }
 
     private static ClientDto ToDto(Client client)

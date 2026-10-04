@@ -1,5 +1,7 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Domain.Shared.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -84,13 +86,14 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     {
         logger.LogInformation("DELETE /api/worktypes/{WorkTypeId}", id);
 
-        var deleted = workTypeService.Delete(id);
+        var result = workTypeService.Delete(id);
 
-        if (!deleted)
+        return result switch
         {
-            return NotFound();
-        }
-
-        return NoContent();
+            DeleteResult.Deleted => NoContent(),
+            DeleteResult.NotFound => NotFound(),
+            DeleteResult.HasRelatedEntities => Conflict(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }

@@ -1,5 +1,6 @@
 using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -79,13 +80,14 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     {
         logger.LogInformation("DELETE /api/clients/{ClientId}", id);
 
-        var deleted = clientService.Delete(id);
+        var result = clientService.Delete(id);
 
-        if (!deleted)
+        return result switch
         {
-            return NotFound();
-        }
-
-        return NoContent();
+            DeleteResult.Deleted => NoContent(),
+            DeleteResult.NotFound => NotFound(),
+            DeleteResult.HasRelatedEntities => Conflict(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }

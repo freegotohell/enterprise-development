@@ -1,5 +1,7 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Domain.Shared.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -102,13 +104,14 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     {
         logger.LogInformation("DELETE /api/cars/{CarId}", id);
 
-        var deleted = carService.Delete(id);
+        var result = carService.Delete(id);
 
-        if (!deleted)
+        return result switch
         {
-            return NotFound();
-        }
-
-        return NoContent();
+            DeleteResult.Deleted => NoContent(),
+            DeleteResult.NotFound => NotFound(),
+            DeleteResult.HasRelatedEntities => Conflict(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }

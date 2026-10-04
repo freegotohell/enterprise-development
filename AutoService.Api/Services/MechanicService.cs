@@ -1,6 +1,9 @@
 ﻿using AutoService.Contracts.DTOs;
 using AutoService.Domain.Data;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Shared.Enums;
+using AutoService.Domain.Shared.Mapping;
+using AutoService.Domain.Shared.Results;
 
 namespace AutoService.Api.Services;
 
@@ -31,6 +34,59 @@ public class MechanicService(
         var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
 
         return mechanic is null ? null : ToDto(mechanic);
+    }
+
+    /// <summary>
+    /// Retrieves list of clients whose repair orders associated with a specific mechanic
+    /// </summary>
+    public List<ClientDto>? GetClients(int mechanicId)
+    {
+        logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
+
+        var mechanicExists = context.Mechanics.Any(x => x.Id == mechanicId);
+
+        if (!mechanicExists)
+        {
+            logger.LogWarning("Mechanic with ID {MechanicId} was not found", mechanicId);
+
+            return null;
+        }
+
+        return context.RepairOrders
+            .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId))
+            .Select(order => order.Client)
+            .Distinct()
+            .OrderBy(client => client.FullName)
+            .Select(client => new ClientDto
+            {
+                Id = client.Id,
+                FullName = client.FullName,
+                Phone = client.Phone
+            })
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets mechanics suitable for a specific work type
+    /// </summary>
+    public List<MechanicDto>? GetByWorkTypeId(int workTypeId)
+    {
+        logger.LogInformation("Getting mechanics for work type with ID {WorkTypeId}", workTypeId);
+
+        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == workTypeId);
+
+        if (workType is null)
+        {
+            logger.LogWarning("Work type with ID {WorkTypeId} was not found", workTypeId);
+
+            return null;
+        }
+
+        return context.Mechanics
+            .Where(mechanic => MechanicSpecializationMapping.Matches(mechanic.Specialization, workType.Category))
+            .OrderBy(mechanic => mechanic.FullName)
+            .Select(ToDto)
+            .ToList();
     }
 
     /// <summary>
@@ -85,7 +141,7 @@ public class MechanicService(
     /// <summary>
     /// Deletes a mechanic by id
     /// </summary>
-    public bool Delete(int id)
+    public DeleteResult Delete(int id)
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
@@ -95,45 +151,23 @@ public class MechanicService(
         {
             logger.LogWarning("Mechanic with ID {MechanicId} was not found", id);
 
-            return false;
+            return DeleteResult.NotFound;
+        }
+
+        if (mechanic.Orders.Count > 0)
+        {
+            logger.LogWarning("Cannot delete mechanic with ID {MechanicId} because it has repair orders", id);
+
+            return DeleteResult.HasRelatedEntities;
         }
 
         context.Mechanics.Remove(mechanic);
 
         logger.LogInformation("Mechanic with ID {MechanicId} was deleted", id);
 
-        return true;
+        return DeleteResult.Deleted;
     }
 
-    /// <summary>
-    /// Retrieves list of clients whose repair orders associated with a specific mechanic
-    /// </summary>
-    public List<ClientDto>? GetClients(int mechanicId)
-    {
-        logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
-
-        var mechanicExists = context.Mechanics.Any(x => x.Id == mechanicId);
-
-        if (!mechanicExists)
-        {
-            logger.LogWarning( "Mechanic with ID {MechanicId} was not found", mechanicId);
-
-            return null;
-        }
-
-        return context.RepairOrders
-            .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId))
-            .Select(order => order.Client)
-            .Distinct()
-            .OrderBy(client => client.FullName)
-            .Select(client => new ClientDto
-            {
-                Id = client.Id,
-                FullName = client.FullName,
-                Phone = client.Phone
-            })
-            .ToList();
-    }
     private static MechanicDto ToDto(Mechanic mechanic)
     {
         return new MechanicDto

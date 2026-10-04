@@ -1,6 +1,7 @@
 ﻿using AutoService.Contracts.DTOs;
 using AutoService.Domain.Data;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Shared.Results;
 
 namespace AutoService.Api.Services;
 
@@ -85,7 +86,7 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
     /// <summary>
     /// Deletes a work type by id
     /// </summary>
-    public bool Delete(int id)
+    public DeleteResult Delete(int id)
     {
         logger.LogInformation("Deleting work type with ID {WorkTypeId}", id);
 
@@ -95,14 +96,21 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
         {
             logger.LogWarning("Work type with ID {WorkTypeId} was not found", id);
 
-            return false;
+            return DeleteResult.NotFound; 
+        }
+
+        if (workType.Orders.Count > 0)
+        {
+            logger.LogWarning("Cannot delete work type with ID {WorkTypeId} because it has repair orders", id);
+
+            return DeleteResult.HasRelatedEntities;
         }
 
         context.WorkTypes.Remove(workType);
 
         logger.LogInformation("Work type with ID {WorkTypeId} was deleted", id);
 
-        return true;
+        return DeleteResult.Deleted;
     }
 
     /// <summary>

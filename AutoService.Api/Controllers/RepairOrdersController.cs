@@ -1,5 +1,7 @@
 ﻿using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Domain.Shared.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Controllers;
@@ -97,10 +99,10 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     /// <summary>
     /// Gets repair orders with the work type
     /// </summary>
-    [HttpGet("/api/work-types/{workTypeId:int}/repairorders")]
+    [HttpGet("/api/worktypes/{workTypeId:int}/repairorders")]
     public ActionResult<List<RepairOrderDto>> GetByWorkTypeId(int workTypeId)
     {
-        logger.LogInformation("GET /api/work-types/{WorkTypeId}/repairorders", workTypeId);
+        logger.LogInformation("GET /api/worktypes/{WorkTypeId}/repairorders", workTypeId);
 
         var orders = repairOrderService.GetByWorkTypeId(workTypeId);
 
@@ -156,13 +158,14 @@ public class RepairOrdersController(RepairOrderService repairOrderService, ILogg
     {
         logger.LogInformation("DELETE /api/repairorders/{RepairOrderId}", id);
 
-        var deleted = repairOrderService.Delete(id);
+        var result = repairOrderService.Delete(id);
 
-        if (!deleted)
+        return result switch
         {
-            return NotFound();
-        }
-
-        return NoContent();
+            DeleteResult.Deleted => NoContent(),
+            DeleteResult.NotFound => NotFound(),
+            DeleteResult.HasRelatedEntities => Conflict(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 }

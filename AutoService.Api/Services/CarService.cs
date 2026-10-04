@@ -1,6 +1,7 @@
 ﻿using AutoService.Contracts.DTOs;
 using AutoService.Domain.Data;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Shared.Results;
 
 namespace AutoService.Api.Services;
 
@@ -115,7 +116,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
     /// <summary>
     /// Deletes a car by id
     /// </summary>
-    public bool Delete(int id)
+    public DeleteResult Delete(int id)
     {
         logger.LogInformation("Deleting car with ID {CarId}", id);
 
@@ -125,14 +126,14 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
         {
             logger.LogWarning("Car with ID {CarId} was not found.", id);
 
-            return false;
+            return DeleteResult.NotFound;
         }
 
         if (car.Orders.Count > 0)
         {
             logger.LogWarning("Cannot delete car with ID {CarId} because it has repair orders.", id);
 
-            return false;
+            return DeleteResult.HasRelatedEntities;
         }
 
         car.Client?.Cars.Remove(car);
@@ -140,7 +141,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
 
         logger.LogInformation("Car with ID {CarId} was deleted", id);
 
-        return true;
+        return DeleteResult.Deleted;
     }
 
     /// <summary>
