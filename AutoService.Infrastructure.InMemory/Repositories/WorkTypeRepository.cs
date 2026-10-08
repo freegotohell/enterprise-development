@@ -28,7 +28,7 @@ public class WorkTypeRepository : IWorkTypeRepository
     /// <inheritdoc />
     public Task<WorkType?> GetByIdAsync(int id)
     {
-        var workType = _context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = _context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(workType);
     }
@@ -44,7 +44,7 @@ public class WorkTypeRepository : IWorkTypeRepository
     /// <inheritdoc />
     public Task UpdateAsync(WorkType entity)
     {
-        var existing = _context.WorkTypes.FirstOrDefault(x => x.Id == entity.Id);
+        WorkType? existing = _context.WorkTypes.FirstOrDefault(x => x.Id == entity.Id);
 
         if (existing is not null)
         {

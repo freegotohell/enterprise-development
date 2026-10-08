@@ -81,17 +81,11 @@ public class MechanicService(
             return null;
         }
 
-        List<Mechanic> mechanics =
-            await mechanicRepository.GetBySpecializationAsync(
-                workType.Category == WorkCategory.Maintenance
-                    ? MechanicSpecialization.Engine
-                    : (MechanicSpecialization)workType.Category);
+        List<Mechanic> mechanics = [];
 
-        if (workType.Category == WorkCategory.Maintenance)
+        foreach (MechanicSpecialization specialization in Enum.GetValues<MechanicSpecialization>())
         {
-            mechanics = [];
-
-            foreach (MechanicSpecialization specialization in Enum.GetValues<MechanicSpecialization>())
+            if (MechanicSpecializationMapping.Matches(specialization, workType.Category))
             {
                 List<Mechanic> specializationMechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
 

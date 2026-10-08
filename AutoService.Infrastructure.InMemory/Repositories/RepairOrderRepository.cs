@@ -28,7 +28,7 @@ public class RepairOrderRepository : IRepairOrderRepository
     /// <inheritdoc />
     public Task<RepairOrder?> GetByIdAsync(int id)
     {
-        var order = _context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = _context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(order);
     }
@@ -44,7 +44,7 @@ public class RepairOrderRepository : IRepairOrderRepository
     /// <inheritdoc />
     public Task UpdateAsync(RepairOrder entity)
     {
-        var existing = _context.RepairOrders.FirstOrDefault(x => x.Id == entity.Id);
+        RepairOrder? existing = _context.RepairOrders.FirstOrDefault(x => x.Id == entity.Id);
 
         if (existing is not null)
         {

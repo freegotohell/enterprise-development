@@ -14,7 +14,7 @@ public class RepairOrdersController(IRepairOrderService repairOrderService, ILog
 {
     /// <summary>
     /// Gets all repair orders
-    /// </summary
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<List<RepairOrderDto>>> GetAll()
     {

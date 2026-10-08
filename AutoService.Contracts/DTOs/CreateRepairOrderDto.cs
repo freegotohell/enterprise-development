@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace AutoService.Contracts.DTOs;
 
 /// <summary>
@@ -8,16 +10,19 @@ public class CreateRepairOrderDto
     /// <summary>
     /// Id of the client associated with the repair order
     /// </summary>
+    [Range(1, int.MaxValue)]
     public int ClientId { get; set; }
 
     /// <summary>
     /// Id of the car associated with the repair order
     /// </summary>
+    [Range(1, int.MaxValue)]
     public int CarId { get; set; }
 
     /// <summary>
     /// Date and time when the car was admitted for repair
     /// </summary>
+    [Required]
     public DateTime AdmissionDate { get; set; }
 
     /// <summary>
@@ -28,10 +33,12 @@ public class CreateRepairOrderDto
     /// <summary>
     /// Ids of mechanics to assign to the repair order
     /// </summary>
+    [MinLength(1)]
     public List<int> MechanicIds { get; set; } = [];
 
     /// <summary>
     /// Ids of work types to include in the repair order
     /// </summary>
+    [MinLength(1)]
     public List<int> WorkTypeIds { get; set; } = [];
 }

@@ -28,7 +28,7 @@ public class CarRepository : ICarRepository
     /// <inheritdoc />
     public Task<Car?> GetByIdAsync(int id)
     {
-        var car = _context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = _context.Cars.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(car);
     }
@@ -44,7 +44,7 @@ public class CarRepository : ICarRepository
     /// <inheritdoc />
     public Task UpdateAsync(Car entity)
     {
-        var existing = _context.Cars.FirstOrDefault(x => x.Id == entity.Id);
+        Car? existing = _context.Cars.FirstOrDefault(x => x.Id == entity.Id);
 
         if (existing is not null)
         {

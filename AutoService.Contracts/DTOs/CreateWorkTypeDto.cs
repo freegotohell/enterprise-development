@@ -1,4 +1,5 @@
 using AutoService.Domain.Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace AutoService.Contracts.DTOs;
 
@@ -10,16 +11,19 @@ public class CreateWorkTypeDto
     /// <summary>
     /// Name of the work type
     /// </summary>
+    [Required]
     public required string Name { get; set; }
 
     /// <summary>
     /// Category of the work
     /// </summary>
+    [Range(0, 5)]
     public WorkCategory Category { get; set; }
 
     /// <summary>
     /// Price of the work
     /// </summary>
+    [Range(0, double.MaxValue)]
     public decimal Cost { get; set; }
 
     /// <summary>
@@ -30,5 +34,6 @@ public class CreateWorkTypeDto
     /// <summary>
     /// Description of the work
     /// </summary>
+    [Required]
     public required string Description { get; set; }
 }

@@ -29,7 +29,7 @@ public class MechanicRepository : IMechanicRepository
     /// <inheritdoc />
     public Task<Mechanic?> GetByIdAsync(int id)
     {
-        var mechanic = _context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = _context.Mechanics.FirstOrDefault(x => x.Id == id);
         return Task.FromResult(mechanic);
     }
 
@@ -43,7 +43,7 @@ public class MechanicRepository : IMechanicRepository
     /// <inheritdoc />
     public Task UpdateAsync(Mechanic entity)
     {
-        var existing = _context.Mechanics.FirstOrDefault(x => x.Id == entity.Id);
+        Mechanic? existing = _context.Mechanics.FirstOrDefault(x => x.Id == entity.Id);
 
         if (existing is not null)
         {

@@ -21,6 +21,8 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<List<RepairOrderDto>> GetAllAsync()
     {
+        logger.LogInformation("Getting all repair orders");
+
         List<RepairOrder> orders = await repairOrderRepository.GetAllAsync();
 
         return orders.Select(ToDto).ToList();
@@ -29,6 +31,8 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<RepairOrderDto?> GetByIdAsync(int id)
     {
+        logger.LogInformation("Getting repair order with ID {RepairOrderId}", id);
+
         RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         return order is null ? null : ToDto(order);
@@ -37,10 +41,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<List<RepairOrderDto>?> GetByClientIdAsync(int clientId)
     {
+        logger.LogInformation("Getting repair orders for client with ID {ClientId}", clientId);
+
         Client? client = await clientRepository.GetByIdAsync(clientId);
 
         if (client is null)
         {
+            logger.LogWarning("Client with ID {ClientId} was not found", clientId);
+
             return null;
         }
 
@@ -52,10 +60,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<List<RepairOrderDto>?> GetByCarIdAsync(int carId)
     {
+        logger.LogInformation("Getting repair orders for car with ID {CarId}", carId);
+
         Car? car = await carRepository.GetByIdAsync(carId);
 
         if (car is null)
         {
+            logger.LogWarning("Car with ID {CarId} was not found", carId);
+
             return null;
         }
 
@@ -67,10 +79,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<List<RepairOrderDto>?> GetByMechanicIdAsync(int mechanicId)
     {
+        logger.LogInformation("Getting repair orders for mechanic with ID {MechanicId}", mechanicId);
+
         Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
         if (mechanic is null)
         {
+            logger.LogWarning("Mechanic with ID {MechanicId} was not found", mechanicId);
+
             return null;
         }
 
@@ -82,10 +98,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<List<RepairOrderDto>?> GetByWorkTypeIdAsync(int workTypeId)
     {
+        logger.LogInformation("Getting repair orders for work type with ID {WorkTypeId}", workTypeId);
+
         WorkType? workType = await workTypeRepository.GetByIdAsync(workTypeId);
 
         if (workType is null)
         {
+            logger.LogWarning("Work type with ID {WorkTypeId} was not found", workTypeId);
+
             return null;
         }
 
@@ -97,10 +117,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<RepairOrderCostDto?> GetTotalCostAsync(int id)
     {
+        logger.LogInformation("Calculating total cost for repair order with ID {RepairOrderId}", id);
+
         RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
+            logger.LogWarning("Repair order with ID {RepairOrderId} was not found", id);
+
             return null;
         }
 
@@ -116,10 +140,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<RepairOrderDto?> CreateAsync(CreateRepairOrderDto dto)
     {
+        logger.LogInformation("Creating a new repair order");
+
         Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
+            logger.LogWarning("Cannot create repair order, client with ID {ClientId} was not found", dto.ClientId);
+
             return null;
         }
 
@@ -127,6 +155,8 @@ public class RepairOrderService(
 
         if (car is null || car.ClientId != client.Id)
         {
+            logger.LogWarning("Cannot create repair order, car with ID {CarId} was not found or car with ID {CarId} does not belong to client with ID {ClientId}", dto.CarId, dto.CarId, dto.ClientId);
+
             return null;
         }
 
@@ -134,6 +164,8 @@ public class RepairOrderService(
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
+            logger.LogWarning("Cannot create repair order, one or more mechanics were not found");
+
             return null;
         }
 
@@ -141,6 +173,8 @@ public class RepairOrderService(
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
+            logger.LogWarning("Cannot create repair order, one or more work types were not found");
+
             return null;
         }
 
@@ -159,13 +193,14 @@ public class RepairOrderService(
             ReleaseDate = dto.ReleaseDate
         };
 
+        var nextOrderMechanicId = GetNextOrderMechanicId(existingOrders);
+        var nextOrderWorkId = GetNextOrderWorkId(existingOrders);
+
         foreach (Mechanic mechanic in mechanics)
         {
-            var nextOrderMechanicId = GetNextOrderMechanicId(existingOrders);
-
             OrderMechanic orderMechanic = new()
             {
-                Id = nextOrderMechanicId,
+                Id = nextOrderMechanicId++,
                 RepairOrderId = order.Id,
                 RepairOrder = order,
                 MechanicId = mechanic.Id,
@@ -178,11 +213,9 @@ public class RepairOrderService(
 
         foreach (WorkType workType in workTypes)
         {
-            var nextOrderWorkId = GetNextOrderWorkId(existingOrders);
-
             OrderWork orderWork = new()
             {
-                Id = nextOrderWorkId,
+                Id = nextOrderWorkId++,
                 RepairOrderId = order.Id,
                 RepairOrder = order,
                 WorkTypeId = workType.Id,
@@ -206,10 +239,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<RepairOrderDto?> UpdateAsync(int id, UpdateRepairOrderDto dto)
     {
+        logger.LogInformation("Updating repair order with ID {RepairOrderId}", id);
+
         RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
+            logger.LogWarning("Repair order with ID {RepairOrderId} was not found", id);
+
             return null;
         }
 
@@ -217,6 +254,8 @@ public class RepairOrderService(
 
         if (client is null)
         {
+            logger.LogWarning("Client with ID {ClientId} was not found", dto.ClientId);
+
             return null;
         }
 
@@ -224,6 +263,8 @@ public class RepairOrderService(
 
         if (car is null || car.ClientId != client.Id)
         {
+            logger.LogWarning("Cannot update repair order, car with ID {CarId} was not found or car with ID {CarId} does not belong to client with ID {ClientId}", dto.CarId, dto.CarId, dto.ClientId);
+
             return null;
         }
 
@@ -231,6 +272,8 @@ public class RepairOrderService(
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
+            logger.LogWarning("Cannot update repair order, one or more mechanics were not found");
+
             return null;
         }
 
@@ -238,6 +281,8 @@ public class RepairOrderService(
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
+            logger.LogWarning("Cannot update repair order, one or more work types were not found");
+
             return null;
         }
 
@@ -269,13 +314,14 @@ public class RepairOrderService(
 
         List<RepairOrder> existingOrders = await repairOrderRepository.GetAllAsync();
 
+        var nextOrderMechanicId = GetNextOrderMechanicId(existingOrders);
+        var nextOrderWorkId = GetNextOrderWorkId(existingOrders);
+
         foreach (Mechanic mechanic in mechanics)
         {
-            var nextOrderMechanicId = GetNextOrderMechanicId(existingOrders);
-
             OrderMechanic orderMechanic = new()
             {
-                Id = nextOrderMechanicId,
+                Id = nextOrderMechanicId++,
                 RepairOrderId = order.Id,
                 RepairOrder = order,
                 MechanicId = mechanic.Id,
@@ -288,11 +334,9 @@ public class RepairOrderService(
 
         foreach (WorkType workType in workTypes)
         {
-            var nextOrderWorkId = GetNextOrderWorkId(existingOrders);
-
             OrderWork orderWork = new()
             {
-                Id = nextOrderWorkId,
+                Id = nextOrderWorkId++,
                 RepairOrderId = order.Id,
                 RepairOrder = order,
                 WorkTypeId = workType.Id,
@@ -313,10 +357,14 @@ public class RepairOrderService(
     /// <inheritdoc />
     public async Task<DeleteResult> DeleteAsync(int id)
     {
+        logger.LogInformation("Deleting repair order with ID {RepairOrderId}", id);
+
         RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
+            logger.LogWarning("Repair order with ID {RepairOrderId} was not found", id);
+
             return DeleteResult.NotFound;
         }
 

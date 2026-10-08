@@ -94,7 +94,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
         {
             Client oldClient = car.Client;
 
-            oldClient?.Cars.Remove(car);
+            oldClient.Cars.Remove(car);
             client.Cars.Add(car);
 
             car.ClientId = client.Id;
@@ -136,7 +136,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return DeleteResult.HasRelatedEntities;
         }
 
-        car.Client?.Cars.Remove(car);
+        car.Client.Cars.Remove(car);
         await carRepository.DeleteAsync(car);
 
         logger.LogInformation("Car with ID {CarId} was deleted", id);

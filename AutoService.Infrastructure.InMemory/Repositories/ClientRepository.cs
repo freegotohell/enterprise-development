@@ -28,7 +28,7 @@ public class ClientRepository : IClientRepository
     /// <inheritdoc />
     public Task<Client?> GetByIdAsync(int id)
     {
-        var client = _context.Clients.FirstOrDefault(x => x.Id == id);
+        Client? client = _context.Clients.FirstOrDefault(x => x.Id == id);
         return Task.FromResult(client);
     }
 
@@ -42,7 +42,7 @@ public class ClientRepository : IClientRepository
     /// <inheritdoc />
     public Task UpdateAsync(Client entity)
     {
-        var existing = _context.Clients.FirstOrDefault(x => x.Id == entity.Id);
+        Client? existing = _context.Clients.FirstOrDefault(x => x.Id == entity.Id);
 
         if (existing is not null)
         {
