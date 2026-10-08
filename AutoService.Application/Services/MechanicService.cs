@@ -1,59 +1,60 @@
 ﻿using AutoService.Contracts.DTOs;
-using AutoService.Domain.Data;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Domain.Shared.Mapping;
 using AutoService.Domain.Shared.Results;
+using Microsoft.Extensions.Logging;
 
-namespace AutoService.Api.Services;
+namespace AutoService.Application.Services;
 
 /// <summary>
 /// Operations for managing mechanics
 /// </summary>
 public class MechanicService(
-    AutoServiceContext context,
-    ILogger<MechanicService> logger)
+    IMechanicRepository mechanicRepository,
+    IRepairOrderRepository repairOrderRepository,
+    IWorkTypeRepository workTypeRepository,
+    ILogger<MechanicService> logger) : IMechanicService
 {
-    /// <summary>
-    /// Gets all mechanics
-    /// </summary>
-    public List<MechanicDto> GetAll()
+    /// <inheritdoc />
+    public async Task<List<MechanicDto>> GetAllAsync()
     {
         logger.LogInformation("Getting all mechanics");
 
-        return context.Mechanics.Select(ToDto).ToList();
+        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
+
+        return mechanics.Select(ToDto).ToList();
     }
 
-    /// <summary>
-    /// Gets a mechanic by id
-    /// </summary>
-    public MechanicDto? GetById(int id)
+    /// <inheritdoc />
+    public async Task<MechanicDto?> GetByIdAsync(int id)
     {
         logger.LogInformation("Getting mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         return mechanic is null ? null : ToDto(mechanic);
     }
 
-    /// <summary>
-    /// Retrieves list of clients whose repair orders associated with a specific mechanic
-    /// </summary>
-    public List<ClientDto>? GetClients(int mechanicId)
+    /// <inheritdoc />
+    public async Task<List<ClientDto>?> GetClientsAsync(int mechanicId)
     {
         logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
 
-        var mechanicExists = context.Mechanics.Any(x => x.Id == mechanicId);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
-        if (!mechanicExists)
+        if (mechanic is null)
         {
             logger.LogWarning("Mechanic with ID {MechanicId} was not found", mechanicId);
 
             return null;
         }
 
-        return context.RepairOrders
-            .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId))
+        List<RepairOrder> orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
+
+        return orders
             .Select(order => order.Client)
             .Distinct()
             .OrderBy(client => client.FullName)
@@ -66,14 +67,12 @@ public class MechanicService(
             .ToList();
     }
 
-    /// <summary>
-    /// Gets mechanics suitable for a specific work type
-    /// </summary>
-    public List<MechanicDto>? GetByWorkTypeId(int workTypeId)
+    /// <inheritdoc />
+    public async Task<List<MechanicDto>?> GetByWorkTypeIdAsync(int workTypeId)
     {
         logger.LogInformation("Getting mechanics for work type with ID {WorkTypeId}", workTypeId);
 
-        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == workTypeId);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(workTypeId);
 
         if (workType is null)
         {
@@ -82,54 +81,66 @@ public class MechanicService(
             return null;
         }
 
-        return context.Mechanics
-            .Where(mechanic => MechanicSpecializationMapping.Matches(mechanic.Specialization, workType.Category))
-            .OrderBy(mechanic => mechanic.FullName)
-            .Select(ToDto)
-            .ToList();
+        List<Mechanic> mechanics =
+            await mechanicRepository.GetBySpecializationAsync(
+                workType.Category == WorkCategory.Maintenance
+                    ? MechanicSpecialization.Engine
+                    : (MechanicSpecialization)workType.Category);
+
+        if (workType.Category == WorkCategory.Maintenance)
+        {
+            mechanics = [];
+
+            foreach (MechanicSpecialization specialization in Enum.GetValues<MechanicSpecialization>())
+            {
+                List<Mechanic> specializationMechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
+
+                mechanics.AddRange(specializationMechanics);
+            }
+        }
+
+        return mechanics.OrderBy(mechanic => mechanic.FullName).Select(ToDto).ToList();
     }
 
-    /// <summary>
-    /// Gets mechanics by specialization
-    /// </summary>
-    public List<MechanicDto> GetBySpecialization(MechanicSpecialization specialization)
+    /// <inheritdoc />
+    public async Task<List<MechanicDto>> GetBySpecializationAsync(MechanicSpecialization specialization)
     {
         logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
 
-        return context.Mechanics.Where(mechanic => mechanic.Specialization == specialization).Select(ToDto).ToList();
+        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
+
+        return mechanics.Select(ToDto).ToList();
     }
 
-    /// <summary>
-    /// Creates a new mechanic
-    /// </summary>
-    public MechanicDto Create(CreateMechanicDto dto)
+    /// <inheritdoc />
+    public async Task<MechanicDto> CreateAsync(CreateMechanicDto dto)
     {
         logger.LogInformation("Creating a new mechanic");
 
-        var mechanic = new Mechanic
+        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
+
+        Mechanic mechanic = new()
         {
-            Id = context.Mechanics.Count == 0 ? 1 : context.Mechanics.Max(x => x.Id) + 1,
+            Id = mechanics.Count == 0 ? 1 : mechanics.Max(x => x.Id) + 1,
             PassportNumber = dto.PassportNumber,
             FullName = dto.FullName,
             Specialization = dto.Specialization,
             Experience = dto.Experience
         };
 
-        context.Mechanics.Add(mechanic);
+        await mechanicRepository.AddAsync(mechanic);
 
         logger.LogInformation("Mechanic with ID {MechanicId} was created", mechanic.Id);
 
         return ToDto(mechanic);
     }
 
-    /// <summary>
-    /// Updates an existing mechanic
-    /// </summary>
-    public MechanicDto? Update(int id, UpdateMechanicDto dto)
+    /// <inheritdoc />
+    public async Task<MechanicDto?> UpdateAsync(int id, UpdateMechanicDto dto)
     {
         logger.LogInformation("Updating mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -143,19 +154,19 @@ public class MechanicService(
         mechanic.Specialization = dto.Specialization;
         mechanic.Experience = dto.Experience;
 
+        await mechanicRepository.UpdateAsync(mechanic);
+
         logger.LogInformation("Mechanic with ID {MechanicId} was updated", id);
 
         return ToDto(mechanic);
     }
 
-    /// <summary>
-    /// Deletes a mechanic by id
-    /// </summary>
-    public DeleteResult Delete(int id)
+    /// <inheritdoc />
+    public async Task<DeleteResult> DeleteAsync(int id)
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -164,14 +175,16 @@ public class MechanicService(
             return DeleteResult.NotFound;
         }
 
-        if (mechanic.Orders.Count > 0)
+        var hasOrders = await mechanicRepository.HasOrdersAsync(id);
+
+        if (hasOrders)
         {
             logger.LogWarning("Cannot delete mechanic with ID {MechanicId} because it has repair orders", id);
 
             return DeleteResult.HasRelatedEntities;
         }
 
-        context.Mechanics.Remove(mechanic);
+        await mechanicRepository.DeleteAsync(mechanic);
 
         logger.LogInformation("Mechanic with ID {MechanicId} was deleted", id);
 

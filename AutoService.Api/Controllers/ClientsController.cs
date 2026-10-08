@@ -1,5 +1,5 @@
-using AutoService.Api.Services;
 using AutoService.Contracts.DTOs;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,28 +10,28 @@ namespace AutoService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class ClientsController(ClientService clientService, ILogger<ClientsController> logger) : ControllerBase
+public class ClientsController(IClientService clientService, ILogger<ClientsController> logger) : ControllerBase
 {
     /// <summary>
     /// Gets all clients
     /// </summary>
     [HttpGet]
-    public ActionResult<List<ClientDto>> GetAll()
+    public async Task<ActionResult<List<ClientDto>>> GetAll()
     {
         logger.LogInformation("GET /api/clients");
 
-        return Ok(clientService.GetAll());
+        return Ok(await clientService.GetAllAsync());
     }
 
     /// <summary>
     /// Gets a client by id
     /// </summary>
     [HttpGet("{id:int}")]
-    public ActionResult<ClientDto> GetById(int id)
+    public async Task<ActionResult<ClientDto>> GetById(int id)
     {
         logger.LogInformation("GET /api/clients/{ClientId}", id);
 
-        ClientDto? client = clientService.GetById(id);
+        ClientDto? client = await clientService.GetByIdAsync(id);
 
         if (client is null)
         {
@@ -45,22 +45,22 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     /// Gets clients with more than one repair order during the last month
     /// </summary>
     [HttpGet("repeated")]
-    public ActionResult<List<RepeatedClientDto>> GetRepeatedLastMonth()
+    public async Task<ActionResult<List<RepeatedClientDto>>> GetRepeatedLastMonth()
     {
         logger.LogInformation("GET /api/clients/repeated");
 
-        return Ok(clientService.GetRepeatedLastMonth());
+        return Ok(await clientService.GetRepeatedLastMonthAsync());
     }
 
     /// <summary>
     /// Creates a new client
     /// </summary>
     [HttpPost]
-    public ActionResult<ClientDto> Create(CreateClientDto dto)
+    public async Task<ActionResult<ClientDto>> Create(CreateClientDto dto)
     {
         logger.LogInformation("POST /api/clients");
 
-        ClientDto client = clientService.Create(dto);
+        ClientDto client = await clientService.CreateAsync(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = client.Id }, client);
     }
@@ -69,11 +69,11 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     /// Updates an existing client
     /// </summary>
     [HttpPut("{id:int}")]
-    public ActionResult<ClientDto> Update(int id, UpdateClientDto dto)
+    public async Task<ActionResult<ClientDto>> Update(int id, UpdateClientDto dto)
     {
         logger.LogInformation("PUT /api/clients/{ClientId}", id);
 
-        ClientDto? client = clientService.Update(id, dto);
+        ClientDto? client = await clientService.UpdateAsync(id, dto);
 
         if (client is null)
         {
@@ -87,11 +87,11 @@ public class ClientsController(ClientService clientService, ILogger<ClientsContr
     /// Deletes a client
     /// </summary>
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         logger.LogInformation("DELETE /api/clients/{ClientId}", id);
 
-        DeleteResult result = clientService.Delete(id);
+        DeleteResult result = await clientService.DeleteAsync(id);
 
         return result switch
         {

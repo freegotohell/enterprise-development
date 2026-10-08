@@ -1,5 +1,5 @@
-﻿using AutoService.Api.Services;
-using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.DTOs;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -11,28 +11,28 @@ namespace AutoService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class MechanicsController(MechanicService mechanicService, ILogger<MechanicsController> logger) : ControllerBase
+public class MechanicsController(IMechanicService mechanicService, ILogger<MechanicsController> logger) : ControllerBase
 {
     /// <summary>
     /// Gets all mechanics
     /// </summary>
     [HttpGet]
-    public ActionResult<List<MechanicDto>> GetAll()
+    public async Task<ActionResult<List<MechanicDto>>> GetAll()
     {
         logger.LogInformation("GET /api/mechanics");
 
-        return Ok(mechanicService.GetAll());
+        return Ok(await mechanicService.GetAllAsync());
     }
 
     /// <summary>
     /// Gets a mechanic by id
     /// </summary>
     [HttpGet("{id:int}")]
-    public ActionResult<MechanicDto> GetById(int id)
+    public async Task<ActionResult<MechanicDto>> GetById(int id)
     {
         logger.LogInformation("GET /api/mechanics/{MechanicId}", id);
 
-        MechanicDto? mechanic = mechanicService.GetById(id);
+        MechanicDto? mechanic = await mechanicService.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -46,11 +46,11 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     /// Retrieves a list of clients associated with a specific mechanic
     /// </summary>
     [HttpGet("{id:int}/clients")]
-    public ActionResult<List<ClientDto>> GetClients(int id)
+    public async Task<ActionResult<List<ClientDto>>> GetClients(int id)
     {
         logger.LogInformation("GET /api/mechanics/{MechanicId}/clients", id);
 
-        List<ClientDto>? clients = mechanicService.GetClients(id);
+        List<ClientDto>? clients = await mechanicService.GetClientsAsync(id);
 
         if (clients is null)
         {
@@ -64,11 +64,11 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     /// Gets mechanics associated with a specific work type
     /// </summary>
     [HttpGet("/api/worktypes/{workTypeId:int}/mechanics")]
-    public ActionResult<List<MechanicDto>> GetByWorkTypeId(int workTypeId)
+    public async Task<ActionResult<List<MechanicDto>>> GetByWorkTypeId(int workTypeId)
     {
         logger.LogInformation("GET /api/worktypes/{WorkTypeId}/mechanics", workTypeId);
 
-        List<MechanicDto>? mechanics = mechanicService.GetByWorkTypeId(workTypeId);
+        List<MechanicDto>? mechanics = await mechanicService.GetByWorkTypeIdAsync(workTypeId);
 
         if (mechanics is null)
         {
@@ -82,22 +82,22 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     /// Gets mechanics by specialization
     /// </summary>
     [HttpGet("by-specialization")]
-    public ActionResult<List<MechanicDto>> GetBySpecialization([FromQuery] MechanicSpecialization specialization)
+    public async Task<ActionResult<List<MechanicDto>>> GetBySpecialization([FromQuery] MechanicSpecialization specialization)
     {
         logger.LogInformation("GET /api/mechanics/by-specialization?specialization={Specialization}", specialization);
 
-        return Ok(mechanicService.GetBySpecialization(specialization));
+        return Ok(await mechanicService.GetBySpecializationAsync(specialization));
     }
 
     /// <summary>
     /// Creates a new mechanic
     /// </summary>
     [HttpPost]
-    public ActionResult<MechanicDto> Create(CreateMechanicDto dto)
+    public async Task<ActionResult<MechanicDto>> Create(CreateMechanicDto dto)
     {
         logger.LogInformation("POST /api/mechanics");
 
-        MechanicDto mechanic = mechanicService.Create(dto);
+        MechanicDto mechanic = await mechanicService.CreateAsync(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = mechanic.Id }, mechanic);
     }
@@ -106,11 +106,11 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     /// Updates an existing mechanic
     /// </summary>
     [HttpPut("{id:int}")]
-    public ActionResult<MechanicDto> Update(int id, UpdateMechanicDto dto)
+    public async Task<ActionResult<MechanicDto>> Update(int id, UpdateMechanicDto dto)
     {
         logger.LogInformation("PUT /api/mechanics/{MechanicId}", id);
 
-        MechanicDto? mechanic = mechanicService.Update(id, dto);
+        MechanicDto? mechanic = await mechanicService.UpdateAsync(id, dto);
 
         if (mechanic is null)
         {
@@ -124,11 +124,11 @@ public class MechanicsController(MechanicService mechanicService, ILogger<Mechan
     /// Deletes a mechanic by id
     /// </summary>
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         logger.LogInformation("DELETE /api/mechanics/{MechanicId}", id);
 
-        DeleteResult result = mechanicService.Delete(id);
+        DeleteResult result = await mechanicService.DeleteAsync(id);
 
         return result switch
         {

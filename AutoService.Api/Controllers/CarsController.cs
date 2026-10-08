@@ -1,5 +1,5 @@
-﻿using AutoService.Api.Services;
-using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.DTOs;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,28 +10,28 @@ namespace AutoService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class CarsController(CarService carService, ILogger<CarsController> logger) : ControllerBase
+public class CarsController(ICarService carService, ILogger<CarsController> logger) : ControllerBase
 {
     /// <summary>
     /// Gets all cars
     /// </summary>
     [HttpGet]
-    public ActionResult<List<CarDto>> GetAll()
+    public async Task<ActionResult<List<CarDto>>> GetAll()
     {
         logger.LogInformation("GET /api/cars");
 
-        return Ok(carService.GetAll());
+        return Ok(await carService.GetAllAsync());
     }
 
     /// <summary>
     /// Gets a car by id
     /// </summary>
     [HttpGet("{id:int}")]
-    public ActionResult<CarDto> GetById(int id)
+    public async Task<ActionResult<CarDto>> GetById(int id)
     {
         logger.LogInformation("GET /api/cars/{CarId}", id);
 
-        CarDto? car = carService.GetById(id);
+        CarDto? car = await carService.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -45,11 +45,11 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     /// Gets cars belonging to a client
     /// </summary>
     [HttpGet("/api/clients/{clientId:int}/cars")]
-    public ActionResult<List<CarDto>> GetByClientId(int clientId)
+    public async Task<ActionResult<List<CarDto>>> GetByClientId(int clientId)
     {
         logger.LogInformation("GET /api/clients/{ClientId}/cars", clientId);
 
-        List<CarDto>? cars = carService.GetByClientId(clientId);
+        List<CarDto>? cars = await carService.GetByClientIdAsync(clientId);
 
         if (cars is null)
         {
@@ -63,11 +63,11 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     /// Creates a new car
     /// </summary>
     [HttpPost]
-    public ActionResult<CarDto> Create(CreateCarDto dto)
+    public async Task<ActionResult<CarDto>> Create(CreateCarDto dto)
     {
         logger.LogInformation("POST /api/cars");
 
-        CarDto? car = carService.Create(dto);
+        CarDto? car = await carService.CreateAsync(dto);
 
         if (car is null)
         {
@@ -81,11 +81,11 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     /// Updates an existing car
     /// </summary>
     [HttpPut("{id:int}")]
-    public ActionResult<CarDto> Update(int id, UpdateCarDto dto)
+    public async Task<ActionResult<CarDto>> Update(int id, UpdateCarDto dto)
     {
         logger.LogInformation("PUT /api/cars/{CarId}", id);
 
-        CarDto? car = carService.Update(id, dto);
+        CarDto? car = await carService.UpdateAsync(id, dto);
 
         if (car is null)
         {
@@ -99,11 +99,11 @@ public class CarsController(CarService carService, ILogger<CarsController> logge
     /// Deletes a car
     /// </summary>
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         logger.LogInformation("DELETE /api/cars/{CarId}", id);
 
-        DeleteResult result = carService.Delete(id);
+        DeleteResult result = await carService.DeleteAsync(id);
 
         return result switch
         {

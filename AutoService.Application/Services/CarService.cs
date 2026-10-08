@@ -1,45 +1,43 @@
 ﻿using AutoService.Contracts.DTOs;
-using AutoService.Domain.Data;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Results;
+using Microsoft.Extensions.Logging;
 
-namespace AutoService.Api.Services;
+namespace AutoService.Application.Services;
 
 /// <summary>
 /// Operations for managing cars
 /// </summary>
-public class CarService(AutoServiceContext context, ILogger<CarService> logger)
+public class CarService(ICarRepository carRepository, IClientRepository clientRepository, ILogger<CarService> logger) : ICarService
 {
-    /// <summary>
-    /// Gets all cars
-    /// </summary>
-    public List<CarDto> GetAll()
+    /// <inheritdoc />
+    public async Task<List<CarDto>> GetAllAsync()
     {
         logger.LogInformation("Getting all cars");
 
-        return context.Cars.Select(ToDto).ToList();
+        List<Car> cars = await carRepository.GetAllAsync();
+
+        return cars.Select(ToDto).ToList();
     }
 
-    /// <summary>
-    /// Gets a car by id
-    /// </summary>
-    public CarDto? GetById(int id)
+    /// <inheritdoc />
+    public async Task<CarDto?> GetByIdAsync(int id)
     {
         logger.LogInformation("Getting car with ID {CarId}", id);
 
-        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         return car is null ? null : ToDto(car);
     }
 
-    /// <summary>
-    /// Creates a new car
-    /// </summary>
-    public CarDto? Create(CreateCarDto dto)
+    /// <inheritdoc />
+    public async Task<CarDto?> CreateAsync(CreateCarDto dto)
     {
         logger.LogInformation("Creating a car for client with ID {ClientId}", dto.ClientId);
 
-        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -48,9 +46,11 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
             return null;
         }
 
+        List<Car> cars = await carRepository.GetAllAsync();
+
         var car = new Car
         {
-            Id = context.Cars.Count == 0 ? 1 : context.Cars.Max(x => x.Id) + 1,
+            Id = cars.Count == 0 ? 1 : cars.Max(x => x.Id) + 1,
             LicensePlate = dto.LicensePlate,
             Brand = dto.Brand,
             Model = dto.Model,
@@ -59,7 +59,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
             Client = client
         };
 
-        context.Cars.Add(car);
+        await carRepository.AddAsync(car);
         client.Cars.Add(car);
 
         logger.LogInformation("Car with ID {CarId} was created", car.Id);
@@ -67,14 +67,12 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
         return ToDto(car);
     }
 
-    /// <summary>
-    /// Updates an existing car
-    /// </summary>
-    public CarDto? Update(int id, UpdateCarDto dto)
+    /// <inheritdoc />
+    public async Task<CarDto?> UpdateAsync(int id, UpdateCarDto dto)
     {
         logger.LogInformation("Updating car with ID {CarId}", id);
 
-        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -83,7 +81,7 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
             return null;
         }
 
-        Client? client = context.Clients.FirstOrDefault(x => x.Id == dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -108,19 +106,19 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
         car.Model = dto.Model;
         car.Year = dto.Year;
 
+        await carRepository.UpdateAsync(car);
+
         logger.LogInformation("Car with ID {CarId} was updated", car.Id);
 
         return ToDto(car);
     }
 
-    /// <summary>
-    /// Deletes a car by id
-    /// </summary>
-    public DeleteResult Delete(int id)
+    /// <inheritdoc />
+    public async Task<DeleteResult> DeleteAsync(int id)
     {
         logger.LogInformation("Deleting car with ID {CarId}", id);
 
-        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -129,7 +127,9 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
             return DeleteResult.NotFound;
         }
 
-        if (car.Orders.Count > 0)
+        var hasOrders = await carRepository.HasOrdersAsync(id);
+
+        if (hasOrders)
         {
             logger.LogWarning("Cannot delete car with ID {CarId} because it has repair orders.", id);
 
@@ -137,30 +137,30 @@ public class CarService(AutoServiceContext context, ILogger<CarService> logger)
         }
 
         car.Client?.Cars.Remove(car);
-        context.Cars.Remove(car);
+        await carRepository.DeleteAsync(car);
 
         logger.LogInformation("Car with ID {CarId} was deleted", id);
 
         return DeleteResult.Deleted;
     }
 
-    /// <summary>
-    /// Gets a car by the client id
-    /// </summary>
-    public List<CarDto>? GetByClientId(int clientId)
+    /// <inheritdoc />
+    public async Task<List<CarDto>?> GetByClientIdAsync(int clientId)
     {
         logger.LogInformation("Getting cars for client with ID {ClientId}", clientId);
 
-        var clientExists = context.Clients.Any(x => x.Id == clientId);
+        Client? client = await clientRepository.GetByIdAsync(clientId);
 
-        if (!clientExists)
+        if (client is null)
         {
             logger.LogWarning("Client with ID {ClientId} was not found", clientId);
 
             return null;
         }
 
-        return context.Cars.Where(x => x.ClientId == clientId).Select(ToDto).ToList();
+        List<Car> cars = await carRepository.GetByClientIdAsync(clientId);
+
+        return cars.Select(ToDto).ToList();
     }
 
     private static CarDto ToDto(Car car)

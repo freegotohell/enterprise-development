@@ -1,5 +1,5 @@
-﻿using AutoService.Api.Services;
-using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.DTOs;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,28 +10,28 @@ namespace AutoService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTypesController> logger) : ControllerBase
+public class WorkTypesController(IWorkTypeService workTypeService, ILogger<WorkTypesController> logger) : ControllerBase
 {
     /// <summary>
     /// Gets all work types
     /// </summary>
     [HttpGet]
-    public ActionResult<List<WorkTypeDto>> GetAll()
+    public async Task<ActionResult<List<WorkTypeDto>>> GetAll()
     {
         logger.LogInformation("GET /api/worktypes");
 
-        return Ok(workTypeService.GetAll());
+        return Ok(await workTypeService.GetAllAsync());
     }
 
     /// <summary>
     /// Gets a work type by id
     /// </summary>
     [HttpGet("{id:int}")]
-    public ActionResult<WorkTypeDto> GetById(int id)
+    public async Task<ActionResult<WorkTypeDto>> GetById(int id)
     {
         logger.LogInformation("GET /api/worktypes/{WorkTypeId}", id);
 
-        WorkTypeDto? workType = workTypeService.GetById(id);
+        WorkTypeDto? workType = await workTypeService.GetByIdAsync(id);
 
         if (workType is null)
         {
@@ -45,27 +45,22 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     /// Gets the five most frequently performed work types
     /// </summary>
     [HttpGet("top5")]
-    public ActionResult<List<FrequentWorkTypeDto>> GetTop5MostFrequent()
+    public async Task<ActionResult<List<FrequentWorkTypeDto>>> GetTop5MostFrequent()
     {
         logger.LogInformation("GET /api/worktypes/top5");
 
-        return Ok(workTypeService.GetTop5MostFrequent());
+        return Ok(await workTypeService.GetTop5MostFrequentAsync());
     }
 
     /// <summary>
     /// Creates a new work type
     /// </summary>
     [HttpPost]
-    public ActionResult<WorkTypeDto> Create(CreateWorkTypeDto dto)
+    public async Task<ActionResult<WorkTypeDto>> Create(CreateWorkTypeDto dto)
     {
         logger.LogInformation("POST /api/worktypes");
 
-        WorkTypeDto? workType = workTypeService.Create(dto);
-
-        if (workType is null)
-        {
-            return BadRequest();
-        }
+        WorkTypeDto workType = await workTypeService.CreateAsync(dto);
 
         return CreatedAtAction(nameof(GetById), new { id = workType.Id }, workType);
     }
@@ -74,11 +69,11 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     /// Updates an existing work type
     /// </summary>
     [HttpPut("{id:int}")]
-    public ActionResult<WorkTypeDto> Update(int id, UpdateWorkTypeDto dto)
+    public async Task<ActionResult<WorkTypeDto>> Update(int id, UpdateWorkTypeDto dto)
     {
         logger.LogInformation("PUT /api/worktypes/{WorkTypeId}", id);
 
-        WorkTypeDto? workType = workTypeService.Update(id, dto);
+        WorkTypeDto? workType = await workTypeService.UpdateAsync(id, dto);
 
         if (workType is null)
         {
@@ -92,11 +87,11 @@ public class WorkTypesController(WorkTypeService workTypeService, ILogger<WorkTy
     /// Deletes a work type by id
     /// </summary>
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
         logger.LogInformation("DELETE /api/worktypes/{WorkTypeId}", id);
 
-        DeleteResult result = workTypeService.Delete(id);
+        DeleteResult result = await workTypeService.DeleteAsync(id);
 
         return result switch
         {

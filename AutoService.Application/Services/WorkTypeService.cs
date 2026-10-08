@@ -1,45 +1,48 @@
 ﻿using AutoService.Contracts.DTOs;
-using AutoService.Domain.Data;
+using AutoService.Contracts.Services;
 using AutoService.Domain.Entities;
+using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Results;
+using Microsoft.Extensions.Logging;
 
-namespace AutoService.Api.Services;
+namespace AutoService.Application.Services;
 
 /// <summary>
 /// Operations for managing work types
 /// </summary>
-public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService> logger)
+public class WorkTypeService(
+    IWorkTypeRepository workTypeRepository,
+    IRepairOrderRepository repairOrderRepository,
+    ILogger<WorkTypeService> logger) : IWorkTypeService
 {
-    /// <summary>
-    /// Gets all work types
-    /// </summary>
-    public List<WorkTypeDto> GetAll()
+    /// <inheritdoc />
+    public async Task<List<WorkTypeDto>> GetAllAsync()
     {
         logger.LogInformation("Getting all work types");
 
-        return context.WorkTypes.Select(ToDto).ToList();
+        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
+
+        return workTypes.Select(ToDto).ToList();
     }
 
-    /// <summary>
-    /// Gets a work type by id
-    /// </summary>
-    public WorkTypeDto? GetById(int id)
+    /// <inheritdoc />
+    public async Task<WorkTypeDto?> GetByIdAsync(int id)
     {
         logger.LogInformation("Getting work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
 
         return workType is null ? null : ToDto(workType);
     }
 
-    /// <summary>
-    /// Gets five most frequently performed work types
-    /// </summary>
-    public List<FrequentWorkTypeDto> GetTop5MostFrequent()
+    /// <inheritdoc />
+    public async Task<List<FrequentWorkTypeDto>> GetTop5MostFrequentAsync()
     {
         logger.LogInformation("Getting top 5 most frequently performed work types");
 
-        return context.RepairOrders
+        List<RepairOrder> repairOrders = await repairOrderRepository.GetAllAsync();
+
+        return repairOrders
             .SelectMany(order => order.Works)
             .GroupBy(orderWork => orderWork.WorkType)
             .Select(group => new FrequentWorkTypeDto
@@ -53,16 +56,16 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
             .ToList();
     }
 
-    /// <summary>
-    /// Creates a new work type
-    /// </summary>
-    public WorkTypeDto Create(CreateWorkTypeDto dto)
+    /// <inheritdoc />
+    public async Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto)
     {
         logger.LogInformation("Creating a new work type");
 
+        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
+
         var workType = new WorkType
         {
-            Id = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(x => x.Id) + 1,
+            Id = workTypes.Count == 0 ? 1 : workTypes.Max(x => x.Id) + 1,
             Name = dto.Name,
             Category = dto.Category,
             Cost = dto.Cost,
@@ -70,21 +73,19 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
             Description = dto.Description
         };
 
-        context.WorkTypes.Add(workType);
+        await workTypeRepository.AddAsync(workType);
 
         logger.LogInformation("Work type with ID {WorkTypeId} was created", workType.Id);
 
         return ToDto(workType);
     }
 
-    /// <summary>
-    /// Updates an existing work type
-    /// </summary>
-    public WorkTypeDto? Update(int id, UpdateWorkTypeDto dto)
+    /// <inheritdoc />
+    public async Task<WorkTypeDto?> UpdateAsync(int id, UpdateWorkTypeDto dto)
     {
         logger.LogInformation("Updating work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {
@@ -99,19 +100,19 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
         workType.Duration = dto.Duration;
         workType.Description = dto.Description;
 
+        await workTypeRepository.UpdateAsync(workType);
+
         logger.LogInformation("Work type with ID {WorkTypeId} was updated", id);
 
         return ToDto(workType);
     }
 
-    /// <summary>
-    /// Deletes a work type by id
-    /// </summary>
-    public DeleteResult Delete(int id)
+    /// <inheritdoc />
+    public async Task<DeleteResult> DeleteAsync(int id)
     {
         logger.LogInformation("Deleting work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {
@@ -120,23 +121,22 @@ public class WorkTypeService(AutoServiceContext context, ILogger<WorkTypeService
             return DeleteResult.NotFound;
         }
 
-        if (workType.Orders.Count > 0)
+        var hasOrders = await workTypeRepository.HasOrdersAsync(id);
+
+        if (hasOrders)
         {
             logger.LogWarning("Cannot delete work type with ID {WorkTypeId} because it has repair orders", id);
 
             return DeleteResult.HasRelatedEntities;
         }
 
-        context.WorkTypes.Remove(workType);
+        await workTypeRepository.DeleteAsync(workType);
 
         logger.LogInformation("Work type with ID {WorkTypeId} was deleted", id);
 
         return DeleteResult.Deleted;
     }
 
-    /// <summary>
-    /// Fills WorkTypeDto with WorkType entity
-    /// </summary>
     private static WorkTypeDto ToDto(WorkType workType)
     {
         return new WorkTypeDto
