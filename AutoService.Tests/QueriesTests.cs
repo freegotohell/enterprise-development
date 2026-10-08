@@ -1,15 +1,13 @@
+using AutoService.Contracts.DTOs;
+using AutoService.Contracts.Services;
+using AutoService.Domain.Entities;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Tests.Fixtures;
-using AutoService.Api.Services;
-using Microsoft.Extensions.Logging.Abstractions;
-using AutoService.Domain.Data;
-using AutoService.Domain.Entities;
-using AutoService.Contracts.DTOs;
 
 namespace AutoService.Tests;
 
 /// <summary>
-/// Contains tests for LINQ queries over the AutoService domain model.
+/// Contains tests for application services
 /// </summary>
 public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServiceFixture>
 {
@@ -17,62 +15,53 @@ public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServic
     /// Verifies that mechanics can be filtered by their specialization through the service
     /// </summary>
     [Fact]
-    public void ReturnMechanicsBySpecialization()
+    public async Task ReturnMechanicsBySpecialization()
     {
-        AutoServiceContext context = fixture.Context;
         MechanicSpecialization specialization = MechanicSpecialization.Engine;
 
-        var expected = context.Mechanics
-            .Where(mechanic => mechanic.Specialization == specialization)
-            .Select(mechanic => mechanic.Id)
-            .OrderBy(id => id)
-            .ToList();
+        IMechanicService service = fixture.GetService<IMechanicService>();
 
-        var service = new MechanicService(context, NullLogger<MechanicService>.Instance);
+        List<MechanicDto> actual = await service.GetBySpecializationAsync(specialization);
 
-        var actual = service.GetBySpecialization(specialization).Select(mechanic => mechanic.Id).OrderBy(id => id).ToList();
-
-        Assert.Equal(expected, actual);
+        Assert.NotEmpty(actual);
+        Assert.All(actual, mechanic => Assert.Equal(specialization, mechanic.Specialization));
     }
 
     /// <summary>
     /// Verifies that clients associated with a mechanic can be retrieved and sorted by name through the service
     /// </summary>
     [Fact]
-    public void ClientsByMechanic()
+    public async Task ClientsByMechanic()
     {
-        AutoServiceContext context = fixture.Context;
+        Mechanic mechanic = fixture.Context.Mechanics.First();
 
-        Mechanic mechanic = context.Mechanics.First();
-
-        var expected = context.RepairOrders
+        var expectedClientIds = fixture.Context.RepairOrders
             .Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanic.Id))
-            .Select(order => order.Client)
+            .Select(order => order.ClientId)
             .Distinct()
-            .OrderBy(client => client.FullName)
-            .Select(client => client.Id)
+            .OrderBy(id => id)
             .ToList();
 
-        var service = new MechanicService(context, NullLogger<MechanicService>.Instance);
+        IMechanicService service = fixture.GetService<IMechanicService>();
 
-        var actual = service.GetClients(mechanic.Id)!
-            .OrderBy(client => client.FullName)
-            .Select(client => client.Id)
-            .ToList();
+        List<ClientDto>? actual = await service.GetClientsAsync(mechanic.Id);
 
-        Assert.Equal(expected, actual);
+        Assert.NotNull(actual);
+
+        var actualClientIds = actual.Select(client => client.Id).OrderBy(id => id).ToList();
+
+        Assert.Equal(expectedClientIds, actualClientIds);
     }
 
     /// <summary>
     /// Verifies that clients with more than one repair request during the last month are returned through the service
     /// </summary>
     [Fact]
-    public void ReturnClientsWithRepeatedRequestsLastMonth()
+    public async Task ReturnClientsWithRepeatedRequestsLastMonth()
     {
-        AutoServiceContext context = fixture.Context;
         DateTime monthAgo = DateTime.Now.AddMonths(-1);
 
-        var expected = context.RepairOrders
+        var expected = fixture.Context.RepairOrders
             .Where(order => order.AdmissionDate >= monthAgo)
             .GroupBy(order => order.ClientId)
             .Where(group => group.Count() > 1)
@@ -81,37 +70,38 @@ public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServic
                 ClientId = group.Key,
                 RequestsCount = group.Count()
             })
-            .OrderBy(x => x.ClientId)
+            .OrderBy(item => item.ClientId)
             .ToList();
 
-        var service = new ClientService(context, NullLogger<ClientService>.Instance);
+        IClientService service = fixture.GetService<IClientService>();
 
-        var actual = service.GetRepeatedLastMonth()
+        List<RepeatedClientDto> actual = await service.GetRepeatedLastMonthAsync();
+
+        var actualValues = actual
             .Select(client => new
             {
                 ClientId = client.ClientId,
                 RequestsCount = client.RequestsCount
             })
-            .OrderBy(x => x.ClientId)
+            .OrderBy(item => item.ClientId)
             .ToList();
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected, actualValues);
     }
 
     /// <summary>
     /// Verifies that the total cost of an order is calculated from its associated work items through the service
     /// </summary>
     [Fact]
-    public void TotalCostForOrder()
+    public async Task TotalCostForOrder()
     {
-        AutoServiceContext context = fixture.Context;
-        RepairOrder order = context.RepairOrders.First();
+        RepairOrder order = fixture.Context.RepairOrders.First();
 
         var expected = order.Works.Sum(work => work.WorkType.Cost);
 
-        var service = new RepairOrderService(context, NullLogger<RepairOrderService>.Instance);
+        IRepairOrderService service = fixture.GetService<IRepairOrderService>();
 
-        RepairOrderCostDto? actual = service.GetTotalCost(order.Id);
+        RepairOrderCostDto? actual = await service.GetTotalCostAsync(order.Id);
 
         Assert.NotNull(actual);
         Assert.Equal(order.Id, actual.RepairOrderId);
@@ -122,34 +112,32 @@ public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServic
     /// Verifies that the five most frequently performed work types are returned in descending order through the service
     /// </summary>
     [Fact]
-    public void Top5MostFrequentWorkTypes()
+    public async Task Top5MostFrequentWorkTypes()
     {
-        AutoServiceContext context = fixture.Context;
+        var expected = fixture.Context.RepairOrders
+        .SelectMany(order => order.Works)
+        .GroupBy(orderWork => orderWork.WorkTypeId)
+        .Select(group => new
+        {
+            WorkTypeId = group.Key,
+            Count = group.Count()
+        })
+        .OrderByDescending(item => item.Count)
+        .Take(5)
+        .ToList();
 
-        var expected = context.RepairOrders
-            .SelectMany(order => order.Works)
-            .GroupBy(orderWork => orderWork.WorkTypeId)
-            .Select(group => new
+        IWorkTypeService service = fixture.GetService<IWorkTypeService>();
+
+        List<FrequentWorkTypeDto> actual = await service.GetTop5MostFrequentAsync();
+
+        var actualValues = actual
+            .Select(workType => new
             {
-                WorkTypeId = group.Key,
-                Count = group.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .Take(5)
-            .ToList();
-
-        var service = new WorkTypeService(
-            context,
-            NullLogger<WorkTypeService>.Instance);
-
-        var actual = service.GetTop5MostFrequent()
-            .Select(work => new
-            {
-                WorkTypeId = work.WorkTypeId,
-                Count = work.Count
+                WorkTypeId = workType.WorkTypeId,
+                Count = workType.Count
             })
             .ToList();
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected, actualValues);
     }
 }
