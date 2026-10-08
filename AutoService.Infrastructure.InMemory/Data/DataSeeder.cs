@@ -1,8 +1,9 @@
+using AutoService.Domain.Data;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Shared.Enums;
 using Bogus;
 
-namespace AutoService.Domain.Data;
+namespace AutoService.Infrastructure.InMemory.Data;
 
 /// <summary>
 /// Generates test data for the auto service domain model.

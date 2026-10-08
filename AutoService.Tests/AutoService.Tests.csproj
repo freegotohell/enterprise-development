@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit.v3" Version="4.0.0" />
 	<PackageReference Include="Microsoft.Testing.Platform" Version="2.3.3" />
@@ -20,7 +22,8 @@
   <ItemGroup>
     <ProjectReference Include="..\AutoService.Domain.Shared\AutoService.Domain.Shared.csproj" />
     <ProjectReference Include="..\AutoService.Domain\AutoService.Domain.csproj" />
-    <ProjectReference Include="..\AutoService.Api\AutoService.Api.csproj" />
+    <ProjectReference Include="..\AutoService.Application\AutoService.Application.csproj" />
+    <ProjectReference Include="..\AutoService.Infrastructure.InMemory\AutoService.Infrastructure.InMemory.csproj" />
   </ItemGroup>
 
 </Project>

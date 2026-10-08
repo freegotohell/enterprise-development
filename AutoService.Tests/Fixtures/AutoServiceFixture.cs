@@ -1,4 +1,5 @@
 using AutoService.Domain.Data;
+using AutoService.Infrastructure.InMemory.Data;
 
 namespace AutoService.Tests.Fixtures;
 

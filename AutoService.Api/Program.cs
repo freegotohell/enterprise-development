@@ -1,13 +1,9 @@
 using AutoService.Contracts.Services;
-using AutoService.Domain.Data;
 using AutoService.Infrastructure.InMemory;
 using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-AutoServiceContext context = DataSeeder.Seed();
-
-builder.Services.AddSingleton(context);
 builder.Services.AddInMemoryInfrastructure();
 
 // Add services to the container.
