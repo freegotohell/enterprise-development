@@ -8,64 +8,70 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// <summary>
 /// Repository for mechanics data operations
 /// </summary>
-public class MechanicRepository : IMechanicRepository
+public class MechanicRepository(AutoServiceContext context) : IMechanicRepository
 {
-    private readonly AutoServiceContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the repo
-    /// </summary>
-    public MechanicRepository(AutoServiceContext context)
-    {
-        _context = context;
-    }
-
     /// <inheritdoc />
     public Task<List<Mechanic>> GetAllAsync()
     {
-        return Task.FromResult(_context.Mechanics.ToList());
+        return Task.FromResult(context.Mechanics.ToList());
     }
 
     /// <inheritdoc />
     public Task<Mechanic?> GetByIdAsync(int id)
     {
-        Mechanic? mechanic = _context.Mechanics.FirstOrDefault(x => x.Id == id);
+        var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+        
         return Task.FromResult(mechanic);
     }
 
     /// <inheritdoc />
-    public Task AddAsync(Mechanic entity)
+    public Task<Mechanic> AddAsync(Mechanic entity)
     {
-        _context.Mechanics.Add(entity);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdateAsync(Mechanic entity)
-    {
-        Mechanic? existing = _context.Mechanics.FirstOrDefault(x => x.Id == entity.Id);
-
-        if (existing is not null)
+        if (context.Mechanics.Contains(entity))
         {
-            var index = _context.Mechanics.IndexOf(existing);
-            _context.Mechanics[index] = entity;
+            return Task.FromResult(entity);
         }
 
-        return Task.CompletedTask;
+        entity.Id = context.Mechanics.Count == 0 ? 1 : context.Mechanics.Max(mechanic => mechanic.Id) + 1;
+        context.Mechanics.Add(entity);
+
+        return Task.FromResult(entity);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(Mechanic entity)
+    public Task<bool> UpdateAsync(Mechanic entity)
     {
-        _context.Mechanics.Remove(entity);
+        var index = context.Mechanics.FindIndex(mechanic => mechanic.Id == entity.Id);
 
-        return Task.CompletedTask;
+        if (index == -1)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.Mechanics[index] = entity;
+
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(Mechanic entity)
+    {
+        var existing = context.Mechanics.FirstOrDefault(mechanic => mechanic.Id == entity.Id);
+
+        if (existing is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.Mechanics.Remove(existing);
+
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />
     public Task<List<Mechanic>> GetBySpecializationAsync(MechanicSpecialization specialization)
     {
-        var mechanics = _context.Mechanics.Where(mechanic => mechanic.Specialization == specialization).ToList();
+        var mechanics = context.Mechanics.Where(mechanic => mechanic.Specialization == specialization).ToList();
 
         return Task.FromResult(mechanics);
     }
@@ -73,7 +79,7 @@ public class MechanicRepository : IMechanicRepository
     /// <inheritdoc />
     public Task<bool> HasOrdersAsync(int mechanicId)
     {
-        var hasOrders = _context.RepairOrders.Any(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId));
+        var hasOrders = context.RepairOrders.Any(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId));
 
         return Task.FromResult(hasOrders);
     }

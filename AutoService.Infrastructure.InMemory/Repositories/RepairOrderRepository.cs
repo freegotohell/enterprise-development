@@ -7,66 +7,70 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// <summary>
 /// Repository for repair orders data operations
 /// </summary>
-public class RepairOrderRepository : IRepairOrderRepository
+public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRepository
 {
-    private readonly AutoServiceContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the repo
-    /// </summary>
-    public RepairOrderRepository(AutoServiceContext context)
-    {
-        _context = context;
-    }
-
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetAllAsync()
     {
-        return Task.FromResult(_context.RepairOrders.ToList());
+        return Task.FromResult(context.RepairOrders.ToList());
     }
 
     /// <inheritdoc />
     public Task<RepairOrder?> GetByIdAsync(int id)
     {
-        RepairOrder? order = _context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(order);
     }
 
     /// <inheritdoc />
-    public Task AddAsync(RepairOrder entity)
+    public Task<RepairOrder> AddAsync(RepairOrder entity)
     {
-        _context.RepairOrders.Add(entity);
-
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdateAsync(RepairOrder entity)
-    {
-        RepairOrder? existing = _context.RepairOrders.FirstOrDefault(x => x.Id == entity.Id);
-
-        if (existing is not null)
+        if (context.RepairOrders.Contains(entity))
         {
-            var index = _context.RepairOrders.IndexOf(existing);
-            _context.RepairOrders[index] = entity;
+            return Task.FromResult(entity);
         }
 
-        return Task.CompletedTask;
+        entity.Id = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
+        context.RepairOrders.Add(entity);
+
+        return Task.FromResult(entity);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(RepairOrder entity)
+    public Task<bool> UpdateAsync(RepairOrder entity)
     {
-        _context.RepairOrders.Remove(entity);
+        var index = context.RepairOrders.FindIndex(order => order.Id == entity.Id);
 
-        return Task.CompletedTask;
+        if (index == -1)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.RepairOrders[index] = entity;
+
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(RepairOrder entity)
+    {
+        var existing = context.RepairOrders.FirstOrDefault(order => order.Id == entity.Id);
+
+        if (existing is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.RepairOrders.Remove(existing);
+
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetByClientIdAsync(int clientId)
     {
-        var orders = _context.RepairOrders.Where(order => order.ClientId == clientId).ToList();
+        var orders = context.RepairOrders.Where(order => order.ClientId == clientId).ToList();
 
         return Task.FromResult(orders);
     }
@@ -74,7 +78,7 @@ public class RepairOrderRepository : IRepairOrderRepository
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetByCarIdAsync(int carId)
     {
-        var orders = _context.RepairOrders.Where(order => order.CarId == carId).ToList();
+        var orders = context.RepairOrders.Where(order => order.CarId == carId).ToList();
 
         return Task.FromResult(orders);
     }
@@ -82,7 +86,7 @@ public class RepairOrderRepository : IRepairOrderRepository
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetByMechanicIdAsync(int mechanicId)
     {
-        var orders = _context.RepairOrders.Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId)).ToList();
+        var orders = context.RepairOrders.Where(order => order.Mechanics.Any(orderMechanic => orderMechanic.MechanicId == mechanicId)).ToList();
 
         return Task.FromResult(orders);
     }
@@ -90,7 +94,7 @@ public class RepairOrderRepository : IRepairOrderRepository
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetByWorkTypeIdAsync(int workTypeId)
     {
-        var orders = _context.RepairOrders.Where(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId)).ToList();
+        var orders = context.RepairOrders.Where(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId)).ToList();
 
         return Task.FromResult(orders);
     }

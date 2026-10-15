@@ -17,7 +17,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting all cars");
 
-        List<Car> cars = await carRepository.GetAllAsync();
+        var cars = await carRepository.GetAllAsync();
 
         return cars.Select(ToDto).ToList();
     }
@@ -27,7 +27,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting car with ID {CarId}", id);
 
-        Car? car = await carRepository.GetByIdAsync(id);
+        var car = await carRepository.GetByIdAsync(id);
 
         return car is null ? null : ToDto(car);
     }
@@ -37,7 +37,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Creating a car for client with ID {ClientId}", dto.ClientId);
 
-        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
+        var client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -46,11 +46,8 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return null;
         }
 
-        List<Car> cars = await carRepository.GetAllAsync();
-
         var car = new Car
         {
-            Id = cars.Count == 0 ? 1 : cars.Max(x => x.Id) + 1,
             LicensePlate = dto.LicensePlate,
             Brand = dto.Brand,
             Model = dto.Model,
@@ -59,7 +56,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             Client = client
         };
 
-        await carRepository.AddAsync(car);
+        car = await carRepository.AddAsync(car);
         client.Cars.Add(car);
 
         logger.LogInformation("Car with ID {CarId} was created", car.Id);
@@ -72,7 +69,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Updating car with ID {CarId}", id);
 
-        Car? car = await carRepository.GetByIdAsync(id);
+        var car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -81,7 +78,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return null;
         }
 
-        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
+        var client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -106,7 +103,14 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
         car.Model = dto.Model;
         car.Year = dto.Year;
 
-        await carRepository.UpdateAsync(car);
+        var updated = await carRepository.UpdateAsync(car);
+
+        if (!updated)
+        {
+            logger.LogWarning("Car with ID {CarId} could not be updated", id);
+
+            return null;
+        }
 
         logger.LogInformation("Car with ID {CarId} was updated", car.Id);
 
@@ -118,7 +122,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Deleting car with ID {CarId}", id);
 
-        Car? car = await carRepository.GetByIdAsync(id);
+        var car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -136,8 +140,16 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return DeleteResult.HasRelatedEntities;
         }
 
+        var deleted = await carRepository.DeleteAsync(car);
+
+        if (!deleted)
+        {
+            logger.LogWarning("Car with ID {CarId} could not be deleted", id);
+
+            return DeleteResult.NotFound;
+        }
+
         car.Client.Cars.Remove(car);
-        await carRepository.DeleteAsync(car);
 
         logger.LogInformation("Car with ID {CarId} was deleted", id);
 
@@ -149,7 +161,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting cars for client with ID {ClientId}", clientId);
 
-        Client? client = await clientRepository.GetByIdAsync(clientId);
+        var client = await clientRepository.GetByIdAsync(clientId);
 
         if (client is null)
         {
@@ -158,7 +170,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return null;
         }
 
-        List<Car> cars = await carRepository.GetByClientIdAsync(clientId);
+        var cars = await carRepository.GetByClientIdAsync(clientId);
 
         return cars.Select(ToDto).ToList();
     }

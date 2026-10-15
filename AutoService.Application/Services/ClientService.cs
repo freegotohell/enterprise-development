@@ -20,7 +20,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting all clients");
 
-        List<Client> clients = await clientRepository.GetAllAsync();
+        var clients = await clientRepository.GetAllAsync();
 
         return clients.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         return client is null ? null : ToDto(client);
     }
@@ -40,9 +40,9 @@ public class ClientService(
     {
         logger.LogInformation("Getting clients with repeated repair orders during the last month");
 
-        DateTime monthAgo = DateTime.Now.AddMonths(-1);
+        var monthAgo = DateTime.Now.AddMonths(-1);
 
-        List<RepairOrder> orders = await repairOrderRepository.GetAllAsync();
+        var orders = await repairOrderRepository.GetAllAsync();
 
         return orders
             .Where(order => order.AdmissionDate >= monthAgo)
@@ -61,16 +61,13 @@ public class ClientService(
     {
         logger.LogInformation("Creating a new client");
 
-        List<Client> clients = await clientRepository.GetAllAsync();
-
-        Client client = new()
+        var client = new Client
         {
-            Id = clients.Count == 0 ? 1 : clients.Max(x => x.Id) + 1,
             FullName = dto.FullName,
             Phone = dto.Phone
         };
 
-        await clientRepository.AddAsync(client);
+        client = await clientRepository.AddAsync(client);
 
         logger.LogInformation("Client with ID {ClientId} was created", client.Id);
 
@@ -82,7 +79,7 @@ public class ClientService(
     {
         logger.LogInformation("Updating client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {
@@ -94,7 +91,14 @@ public class ClientService(
         client.FullName = dto.FullName;
         client.Phone = dto.Phone;
 
-        await clientRepository.UpdateAsync(client);
+        var updated = await clientRepository.UpdateAsync(client);
+
+        if (!updated)
+        {
+            logger.LogWarning("Client with ID {ClientId} could not be updated", id);
+
+            return null;
+        }
 
         logger.LogInformation("Client with ID {ClientId} was updated", id);
 
@@ -106,7 +110,7 @@ public class ClientService(
     {
         logger.LogInformation("Deleting client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {
@@ -125,7 +129,14 @@ public class ClientService(
             return DeleteResult.HasRelatedEntities;
         }
 
-        await clientRepository.DeleteAsync(client);
+        var deleted = await clientRepository.DeleteAsync(client);
+
+        if (!deleted)
+        {
+            logger.LogWarning("Client with ID {ClientId} could not be deleted", id);
+
+            return DeleteResult.NotFound;
+        }
 
         logger.LogInformation("Client with ID {ClientId} was deleted", id);
 

@@ -18,15 +18,15 @@ public interface IRepository<TEntity>
     /// <summary>
     /// Adds a new entity
     /// </summary>
-    public Task AddAsync(TEntity entity);
+    public Task<TEntity> AddAsync(TEntity entity);
 
     /// <summary>
     /// Updates an existing entity
     /// </summary>
-    public Task UpdateAsync(TEntity entity);
+    public Task<bool> UpdateAsync(TEntity entity);
 
     /// <summary>
     /// Deletes an entity
     /// </summary>
-    public Task DeleteAsync(TEntity entity);
+    public Task<bool> DeleteAsync(TEntity entity);
 }

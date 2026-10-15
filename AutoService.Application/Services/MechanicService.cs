@@ -23,7 +23,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting all mechanics");
 
-        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
+        var mechanics = await mechanicRepository.GetAllAsync();
 
         return mechanics.Select(ToDto).ToList();
     }
@@ -33,7 +33,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
+        var mechanic = await mechanicRepository.GetByIdAsync(id);
 
         return mechanic is null ? null : ToDto(mechanic);
     }
@@ -43,7 +43,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
 
-        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
+        var mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
         if (mechanic is null)
         {
@@ -52,7 +52,7 @@ public class MechanicService(
             return null;
         }
 
-        List<RepairOrder> orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
+        var orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
 
         return orders
             .Select(order => order.Client)
@@ -101,7 +101,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
 
-        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
+        var mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
 
         return mechanics.Select(ToDto).ToList();
     }
@@ -111,18 +111,15 @@ public class MechanicService(
     {
         logger.LogInformation("Creating a new mechanic");
 
-        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
-
-        Mechanic mechanic = new()
+        var mechanic = new Mechanic
         {
-            Id = mechanics.Count == 0 ? 1 : mechanics.Max(x => x.Id) + 1,
             PassportNumber = dto.PassportNumber,
             FullName = dto.FullName,
             Specialization = dto.Specialization,
             Experience = dto.Experience
         };
 
-        await mechanicRepository.AddAsync(mechanic);
+        mechanic = await mechanicRepository.AddAsync(mechanic);
 
         logger.LogInformation("Mechanic with ID {MechanicId} was created", mechanic.Id);
 
@@ -134,7 +131,7 @@ public class MechanicService(
     {
         logger.LogInformation("Updating mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
+        var mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -148,7 +145,14 @@ public class MechanicService(
         mechanic.Specialization = dto.Specialization;
         mechanic.Experience = dto.Experience;
 
-        await mechanicRepository.UpdateAsync(mechanic);
+        var updated = await mechanicRepository.UpdateAsync(mechanic);
+
+        if (!updated)
+        {
+            logger.LogWarning("Mechanic with ID {MechanicId} could not be updated", id);
+
+            return null;
+        }
 
         logger.LogInformation("Mechanic with ID {MechanicId} was updated", id);
 
@@ -160,7 +164,7 @@ public class MechanicService(
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
-        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
+        var mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -178,7 +182,14 @@ public class MechanicService(
             return DeleteResult.HasRelatedEntities;
         }
 
-        await mechanicRepository.DeleteAsync(mechanic);
+        var deleted = await mechanicRepository.DeleteAsync(mechanic);
+
+        if (!deleted)
+        {
+            logger.LogWarning("Mechanic with ID {MechanicId} could not be deleted", id);
+
+            return DeleteResult.NotFound;
+        }
 
         logger.LogInformation("Mechanic with ID {MechanicId} was deleted", id);
 

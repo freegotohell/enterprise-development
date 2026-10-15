@@ -7,72 +7,76 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// <summary>
 /// Repository for car data operations
 /// </summary>
-public class CarRepository : ICarRepository
+public class CarRepository(AutoServiceContext context) : ICarRepository
 {
-    private readonly AutoServiceContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the repo
-    /// </summary>
-    public CarRepository(AutoServiceContext context)
-    {
-        _context = context;
-    }
-
     /// <inheritdoc />
     public Task<List<Car>> GetAllAsync()
     {
-        return Task.FromResult(_context.Cars.ToList());
+        return Task.FromResult(context.Cars.ToList());
     }
 
     /// <inheritdoc />
     public Task<Car?> GetByIdAsync(int id)
     {
-        Car? car = _context.Cars.FirstOrDefault(x => x.Id == id);
+        var car = context.Cars.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(car);
     }
 
     /// <inheritdoc />
-    public Task AddAsync(Car entity)
+    public Task<Car> AddAsync(Car entity)
     {
-        _context.Cars.Add(entity);
-
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdateAsync(Car entity)
-    {
-        Car? existing = _context.Cars.FirstOrDefault(x => x.Id == entity.Id);
-
-        if (existing is not null)
+        if (context.Cars.Contains(entity))
         {
-            var index = _context.Cars.IndexOf(existing);
-            _context.Cars[index] = entity;
+            return Task.FromResult(entity);
         }
 
-        return Task.CompletedTask;
+        entity.Id = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
+        context.Cars.Add(entity);
+
+        return Task.FromResult(entity);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(Car entity)
+    public Task<bool> UpdateAsync(Car entity)
     {
-        _context.Cars.Remove(entity);
+        var index = context.Cars.FindIndex(car => car.Id == entity.Id);
 
-        return Task.CompletedTask;
+        if (index == -1)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.Cars[index] = entity;
+
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(Car entity)
+    {
+        var existing = context.Cars.FirstOrDefault(car => car.Id == entity.Id);
+
+        if (existing is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.Cars.Remove(existing);
+
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />
     public Task<List<Car>> GetByClientIdAsync(int clientId)
     {
-        return Task.FromResult(_context.Cars.Where(car => car.ClientId == clientId).ToList());
+        return Task.FromResult(context.Cars.Where(car => car.ClientId == clientId).ToList());
     }
 
     /// <inheritdoc />
     public Task<bool> HasOrdersAsync(int carId)
     {
-        var hasOrders = _context.RepairOrders.Any(order => order.CarId == carId);
+        var hasOrders = context.RepairOrders.Any(order => order.CarId == carId);
 
         return Task.FromResult(hasOrders);
     }

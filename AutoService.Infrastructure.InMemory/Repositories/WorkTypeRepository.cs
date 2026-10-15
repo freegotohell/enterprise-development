@@ -7,66 +7,70 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// <summary>
 /// Repository for work types data operations
 /// </summary>
-public class WorkTypeRepository : IWorkTypeRepository
+public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepository
 {
-    private readonly AutoServiceContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the repo
-    /// </summary>
-    public WorkTypeRepository(AutoServiceContext context)
-    {
-        _context = context;
-    }
-
     /// <inheritdoc />
     public Task<List<WorkType>> GetAllAsync()
     {
-        return Task.FromResult(_context.WorkTypes.ToList());
+        return Task.FromResult(context.WorkTypes.ToList());
     }
 
     /// <inheritdoc />
     public Task<WorkType?> GetByIdAsync(int id)
     {
-        WorkType? workType = _context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(workType);
     }
 
     /// <inheritdoc />
-    public Task AddAsync(WorkType entity)
+    public Task<WorkType> AddAsync(WorkType entity)
     {
-        _context.WorkTypes.Add(entity);
-
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task UpdateAsync(WorkType entity)
-    {
-        WorkType? existing = _context.WorkTypes.FirstOrDefault(x => x.Id == entity.Id);
-
-        if (existing is not null)
+        if (context.WorkTypes.Contains(entity))
         {
-            var index = _context.WorkTypes.IndexOf(existing);
-            _context.WorkTypes[index] = entity;
+            return Task.FromResult(entity);
         }
 
-        return Task.CompletedTask;
+        entity.Id = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(workType => workType.Id) + 1;
+        context.WorkTypes.Add(entity);
+
+        return Task.FromResult(entity);
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(WorkType entity)
+    public Task<bool> UpdateAsync(WorkType entity)
     {
-        _context.WorkTypes.Remove(entity);
+        var index = context.WorkTypes.FindIndex(workType => workType.Id == entity.Id);
 
-        return Task.CompletedTask;
+        if (index == -1)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.WorkTypes[index] = entity;
+
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(WorkType entity)
+    {
+        var existing = context.WorkTypes.FirstOrDefault(workType => workType.Id == entity.Id);
+
+        if (existing is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        context.WorkTypes.Remove(existing);
+
+        return Task.FromResult(true);
     }
 
     /// <inheritdoc />
     public Task<bool> HasOrdersAsync(int workTypeId)
     {
-        var hasOrders = _context.RepairOrders.Any(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId));
+        var hasOrders = context.RepairOrders.Any(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId));
 
         return Task.FromResult(hasOrders);
     }

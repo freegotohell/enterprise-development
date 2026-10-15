@@ -80,8 +80,8 @@ public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServic
         var actualValues = actual
             .Select(client => new
             {
-                ClientId = client.ClientId,
-                RequestsCount = client.RequestsCount
+                client.ClientId,
+                client.RequestsCount
             })
             .OrderBy(item => item.ClientId)
             .ToList();
@@ -133,8 +133,8 @@ public class QueriesTests(AutoServiceFixture fixture) : IClassFixture<AutoServic
         var actualValues = actual
             .Select(workType => new
             {
-                WorkTypeId = workType.WorkTypeId,
-                Count = workType.Count
+                workType.WorkTypeId,
+                workType.Count
             })
             .ToList();
 

@@ -20,7 +20,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting all work types");
 
-        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
+        var workTypes = await workTypeRepository.GetAllAsync();
 
         return workTypes.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
+        var workType = await workTypeRepository.GetByIdAsync(id);
 
         return workType is null ? null : ToDto(workType);
     }
@@ -40,7 +40,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting top 5 most frequently performed work types");
 
-        List<RepairOrder> repairOrders = await repairOrderRepository.GetAllAsync();
+        var repairOrders = await repairOrderRepository.GetAllAsync();
 
         return repairOrders
             .SelectMany(order => order.Works)
@@ -61,11 +61,8 @@ public class WorkTypeService(
     {
         logger.LogInformation("Creating a new work type");
 
-        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
-
         var workType = new WorkType
         {
-            Id = workTypes.Count == 0 ? 1 : workTypes.Max(x => x.Id) + 1,
             Name = dto.Name,
             Category = dto.Category,
             Cost = dto.Cost,
@@ -73,7 +70,7 @@ public class WorkTypeService(
             Description = dto.Description
         };
 
-        await workTypeRepository.AddAsync(workType);
+        workType = await workTypeRepository.AddAsync(workType);
 
         logger.LogInformation("Work type with ID {WorkTypeId} was created", workType.Id);
 
@@ -85,7 +82,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Updating work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
+        var workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {
@@ -100,7 +97,14 @@ public class WorkTypeService(
         workType.Duration = dto.Duration;
         workType.Description = dto.Description;
 
-        await workTypeRepository.UpdateAsync(workType);
+        var updated = await workTypeRepository.UpdateAsync(workType);
+
+        if (!updated)
+        {
+            logger.LogWarning("Work type with ID {WorkTypeId} could not be updated", id);
+
+            return null;
+        }
 
         logger.LogInformation("Work type with ID {WorkTypeId} was updated", id);
 
@@ -130,7 +134,14 @@ public class WorkTypeService(
             return DeleteResult.HasRelatedEntities;
         }
 
-        await workTypeRepository.DeleteAsync(workType);
+        var deleted = await workTypeRepository.DeleteAsync(workType);
+
+        if (!deleted)
+        {
+            logger.LogWarning("Work type with ID {WorkTypeId} could not be deleted", id);
+
+            return DeleteResult.NotFound;
+        }
 
         logger.LogInformation("Work type with ID {WorkTypeId} was deleted", id);
 
