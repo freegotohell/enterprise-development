@@ -1,21 +1,22 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to create a client
+/// Represents a client returned by API
 /// </summary>
-public class CreateClientDto
+public class ClientDto
 {
+    /// <summary>
+    /// Unique id of the client
+    /// </summary>
+    public int Id { get; set; }
+
     /// <summary>
     /// Full name of the client
     /// </summary>
-    [Required]
     public required string FullName { get; set; }
 
     /// <summary>
     /// Phone number of the client
     /// </summary>
-    [Required]
     public required string Phone { get; set; }
 }

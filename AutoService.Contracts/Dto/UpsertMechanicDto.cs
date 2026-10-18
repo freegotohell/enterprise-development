@@ -1,12 +1,12 @@
-using AutoService.Domain.Shared.Enums;
+﻿using AutoService.Domain.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to create a mechanic
+/// Data required to create or update a mechanic
 /// </summary>
-public class CreateMechanicDto
+public class UpsertMechanicDto
 {
     /// <summary>
     /// Passport number of the mechanic

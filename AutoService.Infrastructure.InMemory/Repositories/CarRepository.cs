@@ -18,7 +18,7 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
     /// <inheritdoc />
     public Task<Car?> GetByIdAsync(int id)
     {
-        var car = context.Cars.FirstOrDefault(x => x.Id == id);
+        Car? car = context.Cars.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(car);
     }
@@ -55,7 +55,7 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
     /// <inheritdoc />
     public Task<bool> DeleteAsync(Car entity)
     {
-        var existing = context.Cars.FirstOrDefault(car => car.Id == entity.Id);
+        Car? existing = context.Cars.FirstOrDefault(car => car.Id == entity.Id);
 
         if (existing is null)
         {

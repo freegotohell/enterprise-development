@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to create a repair order
+/// Data required to create or update a repair order
 /// </summary>
-public class CreateRepairOrderDto
+public class UpsertRepairOrderDto
 {
     /// <summary>
     /// Id of the client associated with the repair order

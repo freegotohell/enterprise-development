@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to update a client
+/// Data required to create or update a client
 /// </summary>
-public class UpdateClientDto
+public class UpsertClientDto
 {
     /// <summary>
     /// Full name of the client

@@ -1,5 +1,5 @@
-﻿using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+﻿using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Results;
@@ -20,7 +20,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting all clients");
 
-        var clients = await clientRepository.GetAllAsync();
+        List<Client> clients = await clientRepository.GetAllAsync();
 
         return clients.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting client with ID {ClientId}", id);
 
-        var client = await clientRepository.GetByIdAsync(id);
+        Client? client = await clientRepository.GetByIdAsync(id);
 
         return client is null ? null : ToDto(client);
     }
@@ -40,9 +40,9 @@ public class ClientService(
     {
         logger.LogInformation("Getting clients with repeated repair orders during the last month");
 
-        var monthAgo = DateTime.Now.AddMonths(-1);
+        DateTime monthAgo = DateTime.Now.AddMonths(-1);
 
-        var orders = await repairOrderRepository.GetAllAsync();
+        List<RepairOrder> orders = await repairOrderRepository.GetAllAsync();
 
         return orders
             .Where(order => order.AdmissionDate >= monthAgo)
@@ -57,7 +57,7 @@ public class ClientService(
     }
 
     /// <inheritdoc />
-    public async Task<ClientDto> CreateAsync(CreateClientDto dto)
+    public async Task<ClientDto> CreateAsync(UpsertClientDto dto)
     {
         logger.LogInformation("Creating a new client");
 
@@ -75,17 +75,17 @@ public class ClientService(
     }
 
     /// <inheritdoc />
-    public async Task<ClientDto?> UpdateAsync(int id, UpdateClientDto dto)
+    public async Task<UpdateResult<ClientDto>> UpdateAsync(int id, UpsertClientDto dto)
     {
         logger.LogInformation("Updating client with ID {ClientId}", id);
 
-        var client = await clientRepository.GetByIdAsync(id);
+        Client? client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {
             logger.LogWarning("Client with ID {ClientId} was not found", id);
 
-            return null;
+            return new UpdateResult<ClientDto>(UpdateStatus.NotFound);
         }
 
         client.FullName = dto.FullName;
@@ -97,12 +97,12 @@ public class ClientService(
         {
             logger.LogWarning("Client with ID {ClientId} could not be updated", id);
 
-            return null;
+            return new UpdateResult<ClientDto>(UpdateStatus.Failed);
         }
 
         logger.LogInformation("Client with ID {ClientId} was updated", id);
 
-        return ToDto(client);
+        return new UpdateResult<ClientDto>(UpdateStatus.Success, ToDto(client));
     }
 
     /// <inheritdoc />
@@ -110,7 +110,7 @@ public class ClientService(
     {
         logger.LogInformation("Deleting client with ID {ClientId}", id);
 
-        var client = await clientRepository.GetByIdAsync(id);
+        Client? client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {

@@ -1,7 +1,7 @@
-﻿using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.Dto;
 using AutoService.Domain.Shared.Results;
 
-namespace AutoService.Contracts.Services;
+namespace AutoService.Contracts.Interfaces;
 
 /// <summary>
 /// Operations for managing clients
@@ -26,12 +26,12 @@ public interface IClientService
     /// <summary>
     /// Creates a new client
     /// </summary>
-    public Task<ClientDto> CreateAsync(CreateClientDto dto);
+    public Task<ClientDto> CreateAsync(UpsertClientDto dto);
 
     /// <summary>
     /// Updates an existing client
     /// </summary>
-    public Task<ClientDto?> UpdateAsync(int id, UpdateClientDto dto);
+    public Task<UpdateResult<ClientDto>> UpdateAsync(int id, UpsertClientDto dto);
 
     /// <summary>
     /// Deletes a client

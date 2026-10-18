@@ -18,8 +18,8 @@ public class ClientRepository(AutoServiceContext context) : IClientRepository
     /// <inheritdoc />
     public Task<Client?> GetByIdAsync(int id)
     {
-        var client = context.Clients.FirstOrDefault(x => x.Id == id);
-        
+        Client? client = context.Clients.FirstOrDefault(x => x.Id == id);
+
         return Task.FromResult(client);
     }
 
@@ -55,7 +55,7 @@ public class ClientRepository(AutoServiceContext context) : IClientRepository
     /// <inheritdoc />
     public Task<bool> DeleteAsync(Client entity)
     {
-        var existing = context.Clients.FirstOrDefault(client => client.Id == entity.Id);
+        Client? existing = context.Clients.FirstOrDefault(client => client.Id == entity.Id);
 
         if (existing is null)
         {
@@ -71,7 +71,7 @@ public class ClientRepository(AutoServiceContext context) : IClientRepository
     public Task<bool> HasCarsAsync(int clientId)
     {
         var hasCars = context.Cars.Any(car => car.ClientId == clientId);
-        
+
         return Task.FromResult(hasCars);
     }
 
@@ -79,7 +79,7 @@ public class ClientRepository(AutoServiceContext context) : IClientRepository
     public Task<bool> HasOrdersAsync(int clientId)
     {
         var hasOrders = context.RepairOrders.Any(order => order.ClientId == clientId);
-        
+
         return Task.FromResult(hasOrders);
     }
 }

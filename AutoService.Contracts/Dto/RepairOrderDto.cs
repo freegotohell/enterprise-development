@@ -1,4 +1,4 @@
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
 /// Repair order returned by API

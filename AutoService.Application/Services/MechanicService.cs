@@ -1,5 +1,5 @@
-﻿using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+﻿using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Enums;
@@ -23,7 +23,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting all mechanics");
 
-        var mechanics = await mechanicRepository.GetAllAsync();
+        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
 
         return mechanics.Select(ToDto).ToList();
     }
@@ -33,7 +33,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         return mechanic is null ? null : ToDto(mechanic);
     }
@@ -43,7 +43,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
         if (mechanic is null)
         {
@@ -52,7 +52,7 @@ public class MechanicService(
             return null;
         }
 
-        var orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
+        List<RepairOrder> orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
 
         return orders
             .Select(order => order.Client)
@@ -101,13 +101,13 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
 
-        var mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
+        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
 
         return mechanics.Select(ToDto).ToList();
     }
 
     /// <inheritdoc />
-    public async Task<MechanicDto> CreateAsync(CreateMechanicDto dto)
+    public async Task<MechanicDto> CreateAsync(UpsertMechanicDto dto)
     {
         logger.LogInformation("Creating a new mechanic");
 
@@ -127,17 +127,17 @@ public class MechanicService(
     }
 
     /// <inheritdoc />
-    public async Task<MechanicDto?> UpdateAsync(int id, UpdateMechanicDto dto)
+    public async Task<UpdateResult<MechanicDto>> UpdateAsync(int id, UpsertMechanicDto dto)
     {
         logger.LogInformation("Updating mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
             logger.LogWarning("Mechanic with ID {MechanicId} was not found", id);
 
-            return null;
+            return new UpdateResult<MechanicDto>(UpdateStatus.NotFound);
         }
 
         mechanic.PassportNumber = dto.PassportNumber;
@@ -151,12 +151,12 @@ public class MechanicService(
         {
             logger.LogWarning("Mechanic with ID {MechanicId} could not be updated", id);
 
-            return null;
+            return new UpdateResult<MechanicDto>(UpdateStatus.Failed);
         }
 
         logger.LogInformation("Mechanic with ID {MechanicId} was updated", id);
 
-        return ToDto(mechanic);
+        return new UpdateResult<MechanicDto>(UpdateStatus.Success, ToDto(mechanic));
     }
 
     /// <inheritdoc />
@@ -164,7 +164,7 @@ public class MechanicService(
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {

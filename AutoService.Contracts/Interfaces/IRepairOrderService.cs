@@ -1,7 +1,7 @@
-﻿using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.Dto;
 using AutoService.Domain.Shared.Results;
 
-namespace AutoService.Contracts.Services;
+namespace AutoService.Contracts.Interfaces;
 
 /// <summary>
 /// Operations for managing repair orders
@@ -46,12 +46,12 @@ public interface IRepairOrderService
     /// <summary>
     /// Creates a new repair order
     /// </summary>
-    public Task<RepairOrderDto?> CreateAsync(CreateRepairOrderDto dto);
+    public Task<RepairOrderDto?> CreateAsync(UpsertRepairOrderDto dto);
 
     /// <summary>
     /// Updates an existing repair order
     /// </summary>
-    public Task<RepairOrderDto?> UpdateAsync(int id, UpdateRepairOrderDto dto);
+    public Task<UpdateResult<RepairOrderDto>> UpdateAsync(int id, UpsertRepairOrderDto dto);
 
     /// <summary>
     /// Deletes a repair order by id

@@ -1,6 +1,6 @@
 using AutoService.Domain.Shared.Enums;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
 /// Type of repair work provided by the auto service returned by API

@@ -1,5 +1,5 @@
-using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Tests.Fixtures;

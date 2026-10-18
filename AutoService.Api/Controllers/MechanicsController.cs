@@ -1,5 +1,5 @@
-﻿using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+﻿using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Domain.Shared.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -17,27 +17,34 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     /// Gets all mechanics
     /// </summary>
     [HttpGet]
+    [ProducesResponseType(typeof(List<MechanicDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<MechanicDto>>> GetAll()
     {
-        logger.LogInformation("GET /api/mechanics");
+        List<MechanicDto> mechanics = await mechanicService.GetAllAsync();
 
-        return Ok(await mechanicService.GetAllAsync());
+        logger.LogInformation("Retrieved {Count} mechanics", mechanics.Count);
+
+        return Ok(mechanics);
     }
 
     /// <summary>
     /// Gets a mechanic by id
     /// </summary>
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(MechanicDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<MechanicDto>> GetById(int id)
     {
-        logger.LogInformation("GET /api/mechanics/{MechanicId}", id);
-
         MechanicDto? mechanic = await mechanicService.GetByIdAsync(id);
 
         if (mechanic is null)
         {
+            logger.LogWarning("Mechanic with ID {MechanicId} was not found", id);
+
             return NotFound();
         }
+
+        logger.LogInformation("Mechanic with ID {MechanicId} was retrieved", id);
 
         return Ok(mechanic);
     }
@@ -46,16 +53,20 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     /// Retrieves a list of clients associated with a specific mechanic
     /// </summary>
     [HttpGet("{id:int}/clients")]
+    [ProducesResponseType(typeof(List<ClientDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<ClientDto>>> GetClients(int id)
     {
-        logger.LogInformation("GET /api/mechanics/{MechanicId}/clients", id);
-
         List<ClientDto>? clients = await mechanicService.GetClientsAsync(id);
 
         if (clients is null)
         {
+            logger.LogWarning("Mechanic with ID {MechanicId} was not found when retrieving clients", id);
+
             return NotFound();
         }
+
+        logger.LogInformation("Retrieved {Count} clients for mechanic with ID {MechanicId}", clients.Count, id);
 
         return Ok(clients);
     }
@@ -64,16 +75,20 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     /// Gets mechanics associated with a specific work type
     /// </summary>
     [HttpGet("/api/worktypes/{workTypeId:int}/mechanics")]
+    [ProducesResponseType(typeof(List<MechanicDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<MechanicDto>>> GetByWorkTypeId(int workTypeId)
     {
-        logger.LogInformation("GET /api/worktypes/{WorkTypeId}/mechanics", workTypeId);
-
         List<MechanicDto>? mechanics = await mechanicService.GetByWorkTypeIdAsync(workTypeId);
 
         if (mechanics is null)
         {
+            logger.LogWarning("Work type with ID {WorkTypeId} was not found when retrieving mechanics", workTypeId);
+
             return NotFound();
         }
+
+        logger.LogInformation("Retrieved {Count} mechanics for work type with ID {WorkTypeId}", mechanics.Count, workTypeId);
 
         return Ok(mechanics);
     }
@@ -82,22 +97,28 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     /// Gets mechanics by specialization
     /// </summary>
     [HttpGet("by-specialization")]
+    [ProducesResponseType(typeof(List<MechanicDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<MechanicDto>>> GetBySpecialization([FromQuery] MechanicSpecialization specialization)
     {
-        logger.LogInformation("GET /api/mechanics/by-specialization?specialization={Specialization}", specialization);
+        List<MechanicDto> mechanics = await mechanicService.GetBySpecializationAsync(specialization);
 
-        return Ok(await mechanicService.GetBySpecializationAsync(specialization));
+        logger.LogInformation("Retrieved {Count} mechanics with specialization {Specialization}", mechanics.Count, specialization);
+
+        return Ok(mechanics);
     }
 
     /// <summary>
     /// Creates a new mechanic
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<MechanicDto>> Create(CreateMechanicDto dto)
+    [ProducesResponseType(typeof(MechanicDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<MechanicDto>> Create(UpsertMechanicDto dto)
     {
-        logger.LogInformation("POST /api/mechanics");
-
         MechanicDto mechanic = await mechanicService.CreateAsync(dto);
+
+        logger.LogInformation("Mechanic with ID {MechanicId} was created", mechanic.Id);
 
         return CreatedAtAction(nameof(GetById), new { id = mechanic.Id }, mechanic);
     }
@@ -106,36 +127,69 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     /// Updates an existing mechanic
     /// </summary>
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<MechanicDto>> Update(int id, UpdateMechanicDto dto)
+    [ProducesResponseType(typeof(MechanicDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<MechanicDto>> Update(int id, UpsertMechanicDto dto)
     {
-        logger.LogInformation("PUT /api/mechanics/{MechanicId}", id);
+        UpdateResult<MechanicDto> result = await mechanicService.UpdateAsync(id, dto);
 
-        MechanicDto? mechanic = await mechanicService.UpdateAsync(id, dto);
-
-        if (mechanic is null)
+        switch (result.Status)
         {
-            return NotFound();
-        }
+            case UpdateStatus.Success when result.Value is not null:
+                logger.LogInformation("Mechanic with ID {MechanicId} was successfully updated", id);
+                return Ok(result.Value);
 
-        return Ok(mechanic);
+            case UpdateStatus.NotFound:
+                logger.LogWarning("Mechanic with ID {MechanicId} was not found for update", id);
+                return NotFound();
+
+            case UpdateStatus.Failed:
+                logger.LogError("Failed to update mechanic with ID {MechanicId}", id);
+                return Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Update failed",
+                    detail: "The mechanic could not be updated due to an internal error.");
+
+            default:
+                logger.LogError(
+                    "Unexpected update result for mechanic with ID {MechanicId}: {Status}", id, result.Status);
+                return Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Unexpected update result");
+        }
     }
 
     /// <summary>
     /// Deletes a mechanic by id
     /// </summary>
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(int id)
     {
-        logger.LogInformation("DELETE /api/mechanics/{MechanicId}", id);
-
         DeleteResult result = await mechanicService.DeleteAsync(id);
 
-        return result switch
+        switch (result)
         {
-            DeleteResult.Deleted => NoContent(),
-            DeleteResult.NotFound => NotFound(),
-            DeleteResult.HasRelatedEntities => Conflict(),
-            _ => StatusCode(StatusCodes.Status500InternalServerError)
-        };
+            case DeleteResult.Deleted:
+                logger.LogInformation("Mechanic with ID {MechanicId} was deleted", id);
+                return NoContent();
+
+            case DeleteResult.NotFound:
+                logger.LogWarning("Mechanic with ID {MechanicId} was not found for deletion", id);
+                return NotFound();
+
+            case DeleteResult.HasRelatedEntities:
+                logger.LogWarning("Mechanic with ID {MechanicId} has related entities and cannot be deleted", id);
+                return Conflict();
+
+            default:
+                logger.LogError("An unexpected result occurred while deleting mechanic with ID {MechanicId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 }

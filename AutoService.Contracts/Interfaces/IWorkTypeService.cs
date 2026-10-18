@@ -1,7 +1,7 @@
-﻿using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.Dto;
 using AutoService.Domain.Shared.Results;
 
-namespace AutoService.Contracts.Services;
+namespace AutoService.Contracts.Interfaces;
 
 /// <summary>
 /// Operations for managing work types
@@ -26,12 +26,12 @@ public interface IWorkTypeService
     /// <summary>
     /// Creates a new work type
     /// </summary>
-    public Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto);
+    public Task<WorkTypeDto> CreateAsync(UpsertWorkTypeDto dto);
 
     /// <summary>
     /// Updates an existing work type
     /// </summary>
-    public Task<WorkTypeDto?> UpdateAsync(int id, UpdateWorkTypeDto dto);
+    public Task<UpdateResult<WorkTypeDto>> UpdateAsync(int id, UpsertWorkTypeDto dto);
 
     /// <summary>
     /// Deletes a work type by id

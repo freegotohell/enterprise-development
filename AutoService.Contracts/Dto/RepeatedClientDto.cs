@@ -1,4 +1,4 @@
-﻿namespace AutoService.Contracts.DTOs;
+﻿namespace AutoService.Contracts.Dto;
 
 /// <summary>
 /// Client with multiple repair orders during the last month

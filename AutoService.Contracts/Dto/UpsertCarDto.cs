@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to create a car
+/// Data required to create or update a car
 /// </summary>
-public class CreateCarDto
+public class UpsertCarDto
 {
     /// <summary>
     /// License plate number

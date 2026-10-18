@@ -19,8 +19,8 @@ public class MechanicRepository(AutoServiceContext context) : IMechanicRepositor
     /// <inheritdoc />
     public Task<Mechanic?> GetByIdAsync(int id)
     {
-        var mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
-        
+        Mechanic? mechanic = context.Mechanics.FirstOrDefault(x => x.Id == id);
+
         return Task.FromResult(mechanic);
     }
 
@@ -56,7 +56,7 @@ public class MechanicRepository(AutoServiceContext context) : IMechanicRepositor
     /// <inheritdoc />
     public Task<bool> DeleteAsync(Mechanic entity)
     {
-        var existing = context.Mechanics.FirstOrDefault(mechanic => mechanic.Id == entity.Id);
+        Mechanic? existing = context.Mechanics.FirstOrDefault(mechanic => mechanic.Id == entity.Id);
 
         if (existing is null)
         {

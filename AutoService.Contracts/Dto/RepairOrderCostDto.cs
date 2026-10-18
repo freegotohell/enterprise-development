@@ -1,4 +1,4 @@
-﻿namespace AutoService.Contracts.DTOs;
+﻿namespace AutoService.Contracts.Dto;
 
 /// <summary>
 /// Total cost of a repair order

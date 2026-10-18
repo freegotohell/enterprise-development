@@ -1,4 +1,4 @@
-﻿namespace AutoService.Contracts.DTOs;
+﻿namespace AutoService.Contracts.Dto;
 
 /// <summary>
 /// Work type with the number of times it was performed

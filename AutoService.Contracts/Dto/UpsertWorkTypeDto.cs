@@ -1,12 +1,12 @@
-using AutoService.Domain.Shared.Enums;
+﻿using AutoService.Domain.Shared.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace AutoService.Contracts.DTOs;
+namespace AutoService.Contracts.Dto;
 
 /// <summary>
-/// Data required to update a work type
+/// Data required to create or update a work type
 /// </summary>
-public class UpdateWorkTypeDto
+public class UpsertWorkTypeDto
 {
     /// <summary>
     /// Name of the work type

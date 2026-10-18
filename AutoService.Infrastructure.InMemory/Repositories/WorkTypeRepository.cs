@@ -18,7 +18,7 @@ public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepositor
     /// <inheritdoc />
     public Task<WorkType?> GetByIdAsync(int id)
     {
-        var workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
+        WorkType? workType = context.WorkTypes.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(workType);
     }
@@ -55,7 +55,7 @@ public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepositor
     /// <inheritdoc />
     public Task<bool> DeleteAsync(WorkType entity)
     {
-        var existing = context.WorkTypes.FirstOrDefault(workType => workType.Id == entity.Id);
+        WorkType? existing = context.WorkTypes.FirstOrDefault(workType => workType.Id == entity.Id);
 
         if (existing is null)
         {

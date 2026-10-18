@@ -1,5 +1,5 @@
-﻿using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+﻿using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Results;
@@ -20,7 +20,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting all work types");
 
-        var workTypes = await workTypeRepository.GetAllAsync();
+        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
 
         return workTypes.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting work type with ID {WorkTypeId}", id);
 
-        var workType = await workTypeRepository.GetByIdAsync(id);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
 
         return workType is null ? null : ToDto(workType);
     }
@@ -40,7 +40,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting top 5 most frequently performed work types");
 
-        var repairOrders = await repairOrderRepository.GetAllAsync();
+        List<RepairOrder> repairOrders = await repairOrderRepository.GetAllAsync();
 
         return repairOrders
             .SelectMany(order => order.Works)
@@ -57,7 +57,7 @@ public class WorkTypeService(
     }
 
     /// <inheritdoc />
-    public async Task<WorkTypeDto> CreateAsync(CreateWorkTypeDto dto)
+    public async Task<WorkTypeDto> CreateAsync(UpsertWorkTypeDto dto)
     {
         logger.LogInformation("Creating a new work type");
 
@@ -78,17 +78,17 @@ public class WorkTypeService(
     }
 
     /// <inheritdoc />
-    public async Task<WorkTypeDto?> UpdateAsync(int id, UpdateWorkTypeDto dto)
+    public async Task<UpdateResult<WorkTypeDto>> UpdateAsync(int id, UpsertWorkTypeDto dto)
     {
         logger.LogInformation("Updating work type with ID {WorkTypeId}", id);
 
-        var workType = await workTypeRepository.GetByIdAsync(id);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {
             logger.LogWarning("Work type with ID {WorkTypeId} was not found", id);
 
-            return null;
+            return new UpdateResult<WorkTypeDto>(UpdateStatus.NotFound);
         }
 
         workType.Name = dto.Name;
@@ -103,12 +103,12 @@ public class WorkTypeService(
         {
             logger.LogWarning("Work type with ID {WorkTypeId} could not be updated", id);
 
-            return null;
+            return new UpdateResult<WorkTypeDto>(UpdateStatus.Failed);
         }
 
         logger.LogInformation("Work type with ID {WorkTypeId} was updated", id);
 
-        return ToDto(workType);
+        return new UpdateResult<WorkTypeDto>(UpdateStatus.Success, ToDto(workType));
     }
 
     /// <inheritdoc />

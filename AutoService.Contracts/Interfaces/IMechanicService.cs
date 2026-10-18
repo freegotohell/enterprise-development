@@ -1,8 +1,8 @@
-﻿using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.Dto;
 using AutoService.Domain.Shared.Enums;
 using AutoService.Domain.Shared.Results;
 
-namespace AutoService.Contracts.Services;
+namespace AutoService.Contracts.Interfaces;
 
 /// <summary>
 /// Operations for managing mechanics
@@ -37,12 +37,12 @@ public interface IMechanicService
     /// <summary>
     /// Creates a new mechanic
     /// </summary>
-    public Task<MechanicDto> CreateAsync(CreateMechanicDto dto);
+    public Task<MechanicDto> CreateAsync(UpsertMechanicDto dto);
 
     /// <summary>
     /// Updates an existing mechanic
     /// </summary>
-    public Task<MechanicDto?> UpdateAsync(int id, UpdateMechanicDto dto);
+    public Task<UpdateResult<MechanicDto>> UpdateAsync(int id, UpsertMechanicDto dto);
 
     /// <summary>
     /// Deletes a mechanic by id

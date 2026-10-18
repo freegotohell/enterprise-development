@@ -1,5 +1,5 @@
 using AutoService.Application.Services;
-using AutoService.Contracts.Services;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Data;
 using AutoService.Infrastructure.InMemory;
 using Microsoft.Extensions.DependencyInjection;

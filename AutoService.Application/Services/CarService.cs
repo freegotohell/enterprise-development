@@ -1,5 +1,5 @@
-﻿using AutoService.Contracts.DTOs;
-using AutoService.Contracts.Services;
+﻿using AutoService.Contracts.Dto;
+using AutoService.Contracts.Interfaces;
 using AutoService.Domain.Entities;
 using AutoService.Domain.Interfaces.Repositories;
 using AutoService.Domain.Shared.Results;
@@ -17,7 +17,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting all cars");
 
-        var cars = await carRepository.GetAllAsync();
+        List<Car> cars = await carRepository.GetAllAsync();
 
         return cars.Select(ToDto).ToList();
     }
@@ -27,17 +27,17 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting car with ID {CarId}", id);
 
-        var car = await carRepository.GetByIdAsync(id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         return car is null ? null : ToDto(car);
     }
 
     /// <inheritdoc />
-    public async Task<CarDto?> CreateAsync(CreateCarDto dto)
+    public async Task<CarDto?> CreateAsync(UpsertCarDto dto)
     {
         logger.LogInformation("Creating a car for client with ID {ClientId}", dto.ClientId);
 
-        var client = await clientRepository.GetByIdAsync(dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -65,26 +65,26 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     }
 
     /// <inheritdoc />
-    public async Task<CarDto?> UpdateAsync(int id, UpdateCarDto dto)
+    public async Task<UpdateResult<CarDto>> UpdateAsync(int id, UpsertCarDto dto)
     {
         logger.LogInformation("Updating car with ID {CarId}", id);
 
-        var car = await carRepository.GetByIdAsync(id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
             logger.LogWarning("Car with ID {CarId} was not found", id);
 
-            return null;
+            return new UpdateResult<CarDto>(UpdateStatus.NotFound);
         }
 
-        var client = await clientRepository.GetByIdAsync(dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
             logger.LogWarning("Cannot update car, client with ID {ClientId} was not found", dto.ClientId);
 
-            return null;
+            return new UpdateResult<CarDto>(UpdateStatus.InvalidReference);
         }
 
         if (car.ClientId != client.Id)
@@ -109,12 +109,12 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
         {
             logger.LogWarning("Car with ID {CarId} could not be updated", id);
 
-            return null;
+            return new UpdateResult<CarDto>(UpdateStatus.Failed);
         }
 
         logger.LogInformation("Car with ID {CarId} was updated", car.Id);
 
-        return ToDto(car);
+        return new UpdateResult<CarDto>(UpdateStatus.Success, ToDto(car));
     }
 
     /// <inheritdoc />
@@ -122,7 +122,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Deleting car with ID {CarId}", id);
 
-        var car = await carRepository.GetByIdAsync(id);
+        Car? car = await carRepository.GetByIdAsync(id);
 
         if (car is null)
         {
@@ -161,7 +161,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
     {
         logger.LogInformation("Getting cars for client with ID {ClientId}", clientId);
 
-        var client = await clientRepository.GetByIdAsync(clientId);
+        Client? client = await clientRepository.GetByIdAsync(clientId);
 
         if (client is null)
         {
@@ -170,7 +170,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return null;
         }
 
-        var cars = await carRepository.GetByClientIdAsync(clientId);
+        List<Car> cars = await carRepository.GetByClientIdAsync(clientId);
 
         return cars.Select(ToDto).ToList();
     }

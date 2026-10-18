@@ -18,7 +18,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
     /// <inheritdoc />
     public Task<RepairOrder?> GetByIdAsync(int id)
     {
-        var order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
+        RepairOrder? order = context.RepairOrders.FirstOrDefault(x => x.Id == id);
 
         return Task.FromResult(order);
     }
@@ -55,7 +55,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
     /// <inheritdoc />
     public Task<bool> DeleteAsync(RepairOrder entity)
     {
-        var existing = context.RepairOrders.FirstOrDefault(order => order.Id == entity.Id);
+        RepairOrder? existing = context.RepairOrders.FirstOrDefault(order => order.Id == entity.Id);
 
         if (existing is null)
         {

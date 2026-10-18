@@ -1,7 +1,7 @@
-﻿using AutoService.Contracts.DTOs;
+﻿using AutoService.Contracts.Dto;
 using AutoService.Domain.Shared.Results;
 
-namespace AutoService.Contracts.Services;
+namespace AutoService.Contracts.Interfaces;
 
 /// <summary>
 /// Operations for managing cars
@@ -21,12 +21,12 @@ public interface ICarService
     /// <summary>
     /// Creates a new car
     /// </summary>
-    public Task<CarDto?> CreateAsync(CreateCarDto dto);
+    public Task<CarDto?> CreateAsync(UpsertCarDto dto);
 
     /// <summary>
     /// Updates an existing car
     /// </summary>
-    public Task<CarDto?> UpdateAsync(int id, UpdateCarDto dto);
+    public Task<UpdateResult<CarDto>> UpdateAsync(int id, UpsertCarDto dto);
 
     /// <summary>
     /// Deletes a car by id
