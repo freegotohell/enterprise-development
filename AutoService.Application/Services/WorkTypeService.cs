@@ -20,7 +20,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting all work types");
 
-        List<WorkType> workTypes = await workTypeRepository.GetAllAsync();
+        var workTypes = await workTypeRepository.GetAllAsync();
 
         return workTypes.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
+        var workType = await workTypeRepository.GetByIdAsync(id);
 
         return workType is null ? null : ToDto(workType);
     }
@@ -40,7 +40,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting top 5 most frequently performed work types");
 
-        List<RepairOrder> repairOrders = await repairOrderRepository.GetAllAsync();
+        var repairOrders = await repairOrderRepository.GetAllAsync();
 
         return repairOrders
             .SelectMany(order => order.Works)
@@ -82,7 +82,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Updating work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
+        var workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {
@@ -116,7 +116,7 @@ public class WorkTypeService(
     {
         logger.LogInformation("Deleting work type with ID {WorkTypeId}", id);
 
-        WorkType? workType = await workTypeRepository.GetByIdAsync(id);
+        var workType = await workTypeRepository.GetByIdAsync(id);
 
         if (workType is null)
         {

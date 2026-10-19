@@ -130,12 +130,6 @@ PUT    /api/cars/{id}
 DELETE /api/cars/{id}
 ```
 
-Дополнительный запрос:
-
-```text
-GET /api/clients/{clientId}/cars
-```
-
 ### Mechanics
 
 ```text

@@ -32,6 +32,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
         }
 
         entity.Id = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
+        AssignRelationshipIds(entity);
         context.RepairOrders.Add(entity);
 
         return Task.FromResult(entity);
@@ -47,6 +48,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             return Task.FromResult(false);
         }
 
+        AssignRelationshipIds(entity);
         context.RepairOrders[index] = entity;
 
         return Task.FromResult(true);
@@ -97,5 +99,34 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
         var orders = context.RepairOrders.Where(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId)).ToList();
 
         return Task.FromResult(orders);
+    }
+
+    private void AssignRelationshipIds(RepairOrder order)
+    {
+        var nextOrderMechanicId = context.RepairOrders
+            .SelectMany(existingOrder => existingOrder.Mechanics)
+            .Select(orderMechanic => orderMechanic.Id)
+            .DefaultIfEmpty(0)
+            .Max() + 1;
+
+        foreach (var orderMechanic in order.Mechanics)
+        {
+            orderMechanic.Id = nextOrderMechanicId++;
+            orderMechanic.RepairOrderId = order.Id;
+            orderMechanic.RepairOrder = order;
+        }
+
+        var nextOrderWorkId = context.RepairOrders
+            .SelectMany(existingOrder => existingOrder.Works)
+            .Select(orderWork => orderWork.Id)
+            .DefaultIfEmpty(0)
+            .Max() + 1;
+
+        foreach (var orderWork in order.Works)
+        {
+            orderWork.Id = nextOrderWorkId++;
+            orderWork.RepairOrderId = order.Id;
+            orderWork.RepairOrder = order;
+        }
     }
 }

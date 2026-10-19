@@ -20,7 +20,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting all clients");
 
-        List<Client> clients = await clientRepository.GetAllAsync();
+        var clients = await clientRepository.GetAllAsync();
 
         return clients.Select(ToDto).ToList();
     }
@@ -30,7 +30,7 @@ public class ClientService(
     {
         logger.LogInformation("Getting client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         return client is null ? null : ToDto(client);
     }
@@ -40,9 +40,9 @@ public class ClientService(
     {
         logger.LogInformation("Getting clients with repeated repair orders during the last month");
 
-        DateTime monthAgo = DateTime.Now.AddMonths(-1);
+        var monthAgo = DateTime.Now.AddMonths(-1);
 
-        List<RepairOrder> orders = await repairOrderRepository.GetAllAsync();
+        var orders = await repairOrderRepository.GetAllAsync();
 
         return orders
             .Where(order => order.AdmissionDate >= monthAgo)
@@ -79,7 +79,7 @@ public class ClientService(
     {
         logger.LogInformation("Updating client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {
@@ -110,7 +110,7 @@ public class ClientService(
     {
         logger.LogInformation("Deleting client with ID {ClientId}", id);
 
-        Client? client = await clientRepository.GetByIdAsync(id);
+        var client = await clientRepository.GetByIdAsync(id);
 
         if (client is null)
         {

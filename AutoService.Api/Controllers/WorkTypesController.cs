@@ -52,6 +52,7 @@ public class WorkTypesController(IWorkTypeService workTypeService, ILogger<WorkT
     /// Gets the five most frequently performed work types
     /// </summary>
     [HttpGet("top5")]
+    [ProducesResponseType(typeof(List<FrequentWorkTypeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<FrequentWorkTypeDto>>> GetTop5MostFrequent()
     {
         List<FrequentWorkTypeDto> workTypes = await workTypeService.GetTop5MostFrequentAsync();
@@ -67,7 +68,6 @@ public class WorkTypesController(IWorkTypeService workTypeService, ILogger<WorkT
     [HttpPost]
     [ProducesResponseType(typeof(WorkTypeDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(List<FrequentWorkTypeDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<WorkTypeDto>> Create(UpsertWorkTypeDto dto)
     {
         WorkTypeDto workType = await workTypeService.CreateAsync(dto);
