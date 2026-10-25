@@ -25,7 +25,7 @@ public class RepairOrderService(
 
         var orders = await repairOrderRepository.GetAllAsync();
 
-        return orders.Select(ToDto).ToList();
+        return [.. orders.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -54,7 +54,7 @@ public class RepairOrderService(
 
         List<RepairOrder> orders = await repairOrderRepository.GetByClientIdAsync(clientId);
 
-        return orders.Select(ToDto).ToList();
+        return [.. orders.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -73,7 +73,7 @@ public class RepairOrderService(
 
         List<RepairOrder> orders = await repairOrderRepository.GetByCarIdAsync(carId);
 
-        return orders.Select(ToDto).ToList();
+        return [.. orders.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -92,7 +92,7 @@ public class RepairOrderService(
 
         List<RepairOrder> orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
 
-        return orders.Select(ToDto).ToList();
+        return [.. orders.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -111,7 +111,7 @@ public class RepairOrderService(
 
         List<RepairOrder> orders = await repairOrderRepository.GetByWorkTypeIdAsync(workTypeId);
 
-        return orders.Select(ToDto).ToList();
+        return [.. orders.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -414,12 +414,8 @@ public class RepairOrderService(
             CarId = order.CarId,
             AdmissionDate = order.AdmissionDate,
             ReleaseDate = order.ReleaseDate,
-            MechanicIds = order.Mechanics
-                .Select(orderMechanic => orderMechanic.MechanicId)
-                .ToList(),
-            WorkTypeIds = order.Works
-                .Select(orderWork => orderWork.WorkTypeId)
-                .ToList()
+            MechanicIds = [.. order.Mechanics.Select(orderMechanic => orderMechanic.MechanicId)],
+            WorkTypeIds = [.. order.Works.Select(orderWork => orderWork.WorkTypeId)]
         };
     }
 }

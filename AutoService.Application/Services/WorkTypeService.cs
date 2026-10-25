@@ -22,7 +22,7 @@ public class WorkTypeService(
 
         var workTypes = await workTypeRepository.GetAllAsync();
 
-        return workTypes.Select(ToDto).ToList();
+        return [.. workTypes.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -42,7 +42,7 @@ public class WorkTypeService(
 
         var repairOrders = await repairOrderRepository.GetAllAsync();
 
-        return repairOrders
+        return [.. repairOrders
             .SelectMany(order => order.Works)
             .GroupBy(orderWork => orderWork.WorkType)
             .Select(group => new FrequentWorkTypeDto
@@ -52,8 +52,7 @@ public class WorkTypeService(
                 Count = group.Count()
             })
             .OrderByDescending(x => x.Count)
-            .Take(5)
-            .ToList();
+            .Take(5)];
     }
 
     /// <inheritdoc />

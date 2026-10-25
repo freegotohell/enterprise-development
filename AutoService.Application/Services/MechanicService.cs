@@ -25,7 +25,7 @@ public class MechanicService(
 
         var mechanics = await mechanicRepository.GetAllAsync();
 
-        return mechanics.Select(ToDto).ToList();
+        return [.. mechanics.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -54,7 +54,7 @@ public class MechanicService(
 
         var orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
 
-        return orders
+        return [.. orders
             .Select(order => order.Client)
             .Distinct()
             .OrderBy(client => client.FullName)
@@ -63,8 +63,7 @@ public class MechanicService(
                 Id = client.Id,
                 FullName = client.FullName,
                 Phone = client.Phone
-            })
-            .ToList();
+            })];
     }
 
     /// <inheritdoc />
@@ -93,7 +92,7 @@ public class MechanicService(
             }
         }
 
-        return mechanics.OrderBy(mechanic => mechanic.FullName).Select(ToDto).ToList();
+        return [.. mechanics.OrderBy(mechanic => mechanic.FullName).Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -103,7 +102,7 @@ public class MechanicService(
 
         List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
 
-        return mechanics.Select(ToDto).ToList();
+        return [.. mechanics.Select(ToDto)];
     }
 
     /// <inheritdoc />

@@ -22,7 +22,7 @@ public class ClientService(
 
         var clients = await clientRepository.GetAllAsync();
 
-        return clients.Select(ToDto).ToList();
+        return [.. clients.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -44,7 +44,7 @@ public class ClientService(
 
         var orders = await repairOrderRepository.GetAllAsync();
 
-        return orders
+        return [.. orders
             .Where(order => order.AdmissionDate >= monthAgo)
             .GroupBy(order => order.ClientId)
             .Where(group => group.Count() > 1)
@@ -52,8 +52,7 @@ public class ClientService(
             {
                 ClientId = group.Key,
                 RequestsCount = group.Count()
-            })
-            .ToList();
+            })];
     }
 
     /// <inheritdoc />
