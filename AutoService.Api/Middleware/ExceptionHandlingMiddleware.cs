@@ -3,8 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoService.Api.Middleware;
 
+/// <summary>
+/// Catches unhandled exceptions and returns a 500 ProblemDetails response.
+/// </summary>
 public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
+    /// <summary>
+    /// Invokes the next middleware and handles any unhandled exceptions.
+    /// </summary>
     public async Task InvokeAsync(HttpContext context)
     {
         try

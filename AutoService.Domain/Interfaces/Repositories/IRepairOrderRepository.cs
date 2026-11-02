@@ -26,4 +26,14 @@ public interface IRepairOrderRepository : IRepository<RepairOrder>
     /// Gets repair orders containing the work type
     /// </summary>
     public Task<List<RepairOrder>> GetByWorkTypeIdAsync(int workTypeId);
+
+    /// <summary>
+    /// Gets repair orders started this month
+    /// </summary>
+    public Task<List<RepairOrder>> GetByAdmissionDateFromAsync(DateTime date);
+
+    /// <summary>
+    /// Gets 5 most frequent work types
+    /// </summary>
+    public Task<List<(WorkType WorkType, int Count)>> GetTop5MostFrequentWorkTypesAsync();
 }

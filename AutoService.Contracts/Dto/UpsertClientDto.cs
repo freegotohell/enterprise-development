@@ -11,11 +11,12 @@ public class UpsertClientDto
     /// Full name of the client
     /// </summary>
     [Required]
-    public required string FullName { get; set; }
+    public required string FullName { get; init; }
 
     /// <summary>
     /// Phone number of the client
     /// </summary>
     [Required]
-    public required string Phone { get; set; }
+    [Phone]
+    public required string Phone { get; init; }
 }

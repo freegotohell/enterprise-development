@@ -9,6 +9,8 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRepository
 {
+    private int nextId = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
+
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetAllAsync()
     {
@@ -31,7 +33,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             return Task.FromResult(entity);
         }
 
-        entity.Id = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
+        entity.Id = nextId++;
         AssignRelationshipIds(entity);
         context.RepairOrders.Add(entity);
 
@@ -99,6 +101,33 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
         var orders = context.RepairOrders.Where(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId)).ToList();
 
         return Task.FromResult(orders);
+    }
+
+    /// <inheritdoc />
+    public Task<List<RepairOrder>> GetByAdmissionDateFromAsync(DateTime date)
+    {
+        var orders = context.RepairOrders.Where(order => order.AdmissionDate >= date).ToList();
+
+        return Task.FromResult(orders);
+    }
+
+    /// <inheritdoc />
+    public Task<List<(WorkType WorkType, int Count)>> GetTop5MostFrequentWorkTypesAsync()
+    {
+        var result = context.RepairOrders
+            .SelectMany(order => order.Works)
+            .GroupBy(orderWork => orderWork.WorkTypeId)
+            .Select(group => new
+            {
+                WorkType = group.First().WorkType,
+                Count = group.Count()
+            })
+            .OrderByDescending(item => item.Count)
+            .Take(5)
+            .Select(item => (item.WorkType, item.Count))
+            .ToList();
+
+        return Task.FromResult(result);
     }
 
     private void AssignRelationshipIds(RepairOrder order)

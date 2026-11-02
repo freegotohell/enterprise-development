@@ -40,19 +40,14 @@ public class WorkTypeService(
     {
         logger.LogInformation("Getting top 5 most frequently performed work types");
 
-        var repairOrders = await repairOrderRepository.GetAllAsync();
+        var frequentWorkTypes = await repairOrderRepository.GetTop5MostFrequentWorkTypesAsync();
 
-        return [.. repairOrders
-            .SelectMany(order => order.Works)
-            .GroupBy(orderWork => orderWork.WorkType)
-            .Select(group => new FrequentWorkTypeDto
-            {
-                WorkTypeId = group.Key.Id,
-                Name = group.Key.Name,
-                Count = group.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .Take(5)];
+        return [.. frequentWorkTypes.Select(item => new FrequentWorkTypeDto
+        {
+            WorkTypeId = item.WorkType.Id,
+            Name = item.WorkType.Name,
+            Count = item.Count
+        })];
     }
 
     /// <inheritdoc />

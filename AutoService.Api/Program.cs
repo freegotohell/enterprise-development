@@ -15,6 +15,8 @@ builder.Services.AddScoped<ICarService, AutoService.Application.Services.CarServ
 builder.Services.AddScoped<IRepairOrderService, AutoService.Application.Services.RepairOrderService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -23,19 +25,21 @@ builder.Services
             new JsonStringEnumConverter());
     });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 WebApplication app = builder.Build();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "AutoService API v1");
+    });
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

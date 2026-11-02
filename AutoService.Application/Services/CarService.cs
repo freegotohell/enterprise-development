@@ -19,7 +19,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
 
         var cars = await carRepository.GetAllAsync();
 
-        return cars.Select(ToDto).ToList();
+        return [.. cars.Select(ToDto)];
     }
 
     /// <inheritdoc />
@@ -172,7 +172,7 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
 
         var cars = await carRepository.GetByClientIdAsync(clientId);
 
-        return cars.Select(ToDto).ToList();
+        return [.. cars.Select(ToDto)];
     }
 
     private static CarDto ToDto(Car car)

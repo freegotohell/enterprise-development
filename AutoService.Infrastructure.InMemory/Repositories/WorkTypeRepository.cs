@@ -9,6 +9,8 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepository
 {
+    private int nextId = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(workType => workType.Id) + 1;
+
     /// <inheritdoc />
     public Task<List<WorkType>> GetAllAsync()
     {
@@ -31,7 +33,7 @@ public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepositor
             return Task.FromResult(entity);
         }
 
-        entity.Id = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(workType => workType.Id) + 1;
+        entity.Id = nextId++;
         context.WorkTypes.Add(entity);
 
         return Task.FromResult(entity);
@@ -73,5 +75,13 @@ public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepositor
         var hasOrders = context.RepairOrders.Any(order => order.Works.Any(orderWork => orderWork.WorkTypeId == workTypeId));
 
         return Task.FromResult(hasOrders);
+    }
+
+    /// <inheritdoc />
+    public Task<List<WorkType>> GetByIdsAsync(IReadOnlyCollection<int> ids)
+    {
+        var workTypes = context.WorkTypes.Where(workType => ids.Contains(workType.Id)).ToList();
+
+        return Task.FromResult(workTypes);
     }
 }

@@ -160,7 +160,7 @@ public class RepairOrderService(
             return null;
         }
 
-        var mechanics = (await mechanicRepository.GetAllAsync()).Where(mechanic => dto.MechanicIds.Contains(mechanic.Id)).ToList();
+        var mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
@@ -169,7 +169,7 @@ public class RepairOrderService(
             return null;
         }
 
-        var workTypes = (await workTypeRepository.GetAllAsync()).Where(workType => dto.WorkTypeIds.Contains(workType.Id)).ToList();
+        var workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
@@ -184,7 +184,7 @@ public class RepairOrderService(
             Client = client,
             CarId = car.Id,
             Car = car,
-            AdmissionDate = dto.AdmissionDate,
+            AdmissionDate = dto.AdmissionDate!.Value,
             ReleaseDate = dto.ReleaseDate
         };
 
@@ -266,7 +266,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var mechanics = (await mechanicRepository.GetAllAsync()).Where(mechanic => dto.MechanicIds.Contains(mechanic.Id)).ToList();
+        var mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
@@ -275,7 +275,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var workTypes = (await workTypeRepository.GetAllAsync()).Where(workType => dto.WorkTypeIds.Contains(workType.Id)).ToList();
+        var workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
@@ -294,7 +294,7 @@ public class RepairOrderService(
             Client = client,
             CarId = car.Id,
             Car = car,
-            AdmissionDate = dto.AdmissionDate,
+            AdmissionDate = dto.AdmissionDate!.Value,
             ReleaseDate = dto.ReleaseDate
         };
 

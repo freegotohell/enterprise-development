@@ -11,29 +11,29 @@ public class UpsertCarDto
     /// License plate number
     /// </summary>
     [Required]
-    public required string LicensePlate { get; set; }
+    public required string LicensePlate { get; init; }
 
     /// <summary>
     /// Car brand
     /// </summary>
     [Required]
-    public required string Brand { get; set; }
+    public required string Brand { get; init; }
 
     /// <summary>
     /// Car model
     /// </summary>
     [Required]
-    public required string Model { get; set; }
+    public required string Model { get; init; }
 
     /// <summary>
     /// Car production year
     /// </summary>
     [Range(1900, 2100)]
-    public int? Year { get; set; }
+    public int? Year { get; init; }
 
     /// <summary>
     /// Id of the client who owns the car
     /// </summary>
     [Range(1, int.MaxValue)]
-    public int ClientId { get; set; }
+    public int ClientId { get; init; }
 }

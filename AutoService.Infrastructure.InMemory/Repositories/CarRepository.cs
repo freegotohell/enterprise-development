@@ -9,6 +9,8 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class CarRepository(AutoServiceContext context) : ICarRepository
 {
+    private int nextId = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
+    
     /// <inheritdoc />
     public Task<List<Car>> GetAllAsync()
     {
@@ -31,7 +33,7 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
             return Task.FromResult(entity);
         }
 
-        entity.Id = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
+        entity.Id = nextId++;
         context.Cars.Add(entity);
 
         return Task.FromResult(entity);

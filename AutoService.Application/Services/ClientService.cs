@@ -42,10 +42,9 @@ public class ClientService(
 
         var monthAgo = DateTime.Now.AddMonths(-1);
 
-        var orders = await repairOrderRepository.GetAllAsync();
+        var orders = await repairOrderRepository.GetByAdmissionDateFromAsync(monthAgo);
 
         return [.. orders
-            .Where(order => order.AdmissionDate >= monthAgo)
             .GroupBy(order => order.ClientId)
             .Where(group => group.Count() > 1)
             .Select(group => new RepeatedClientDto

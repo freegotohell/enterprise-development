@@ -13,23 +13,23 @@ public class UpsertMechanicDto
     /// </summary>
     [Required]
     [StringLength(10)]
-    public required string PassportNumber { get; set; }
+    public required string PassportNumber { get; init; }
 
     /// <summary>
     /// Full name of the mechanic
     /// </summary>
     [Required]
-    public required string FullName { get; set; }
+    public required string FullName { get; init; }
 
     /// <summary>
     /// Specialization of the mechanic
     /// </summary>
     [Range(0, 4)]
-    public MechanicSpecialization Specialization { get; set; }
+    public MechanicSpecialization Specialization { get; init; }
 
     /// <summary>
     /// Work experience of the mechanic in years
     /// </summary>
     [Range(0, 60)]
-    public int Experience { get; set; }
+    public int Experience { get; init; }
 }

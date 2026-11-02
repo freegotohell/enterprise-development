@@ -80,17 +80,10 @@ public class MechanicService(
             return null;
         }
 
-        var mechanics = new List<Mechanic>();
+        var specializations = Enum.GetValues<MechanicSpecialization>().Where(specialization => 
+            MechanicSpecializationMapping.Matches(specialization, workType.Category)).ToList();
 
-        foreach (MechanicSpecialization specialization in Enum.GetValues<MechanicSpecialization>())
-        {
-            if (MechanicSpecializationMapping.Matches(specialization, workType.Category))
-            {
-                var specializationMechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
-
-                mechanics.AddRange(specializationMechanics);
-            }
-        }
+        var mechanics = await mechanicRepository.GetBySpecializationsAsync(specializations);
 
         return [.. mechanics.OrderBy(mechanic => mechanic.FullName).Select(ToDto)];
     }
@@ -100,7 +93,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
 
-        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationAsync(specialization);
+        var mechanics = await mechanicRepository.GetBySpecializationsAsync([specialization]);
 
         return [.. mechanics.Select(ToDto)];
     }

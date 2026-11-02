@@ -8,15 +8,15 @@ public class ClientDto
     /// <summary>
     /// Unique id of the client
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     /// <summary>
     /// Full name of the client
     /// </summary>
-    public required string FullName { get; set; }
+    public required string FullName { get; init; }
 
     /// <summary>
     /// Phone number of the client
     /// </summary>
-    public required string Phone { get; set; }
+    public required string Phone { get; init; }
 }

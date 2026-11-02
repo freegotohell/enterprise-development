@@ -12,28 +12,29 @@ public class UpsertWorkTypeDto
     /// Name of the work type
     /// </summary>
     [Required]
-    public required string Name { get; set; }
+    public required string Name { get; init; }
 
     /// <summary>
     /// Category of the work
     /// </summary>
     [Range(0, 5)]
-    public WorkCategory Category { get; set; }
+    public WorkCategory Category { get; init; }
 
     /// <summary>
     /// Price of the work
     /// </summary>
     [Range(0, double.MaxValue)]
-    public decimal Cost { get; set; }
+    public decimal Cost { get; init; }
 
     /// <summary>
     /// Estimated duration of the work
     /// </summary>
-    public TimeSpan Duration { get; set; }
+    [Range(typeof(TimeSpan), "00:00:00", "90.00:00:00")]
+    public TimeSpan Duration { get; init; }
 
     /// <summary>
     /// Description of the work
     /// </summary>
     [Required]
-    public required string Description { get; set; }
+    public required string Description { get; init; }
 }
