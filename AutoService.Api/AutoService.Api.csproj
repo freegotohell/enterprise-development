@@ -16,6 +16,7 @@
     <ProjectReference Include="..\AutoService.Contracts\AutoService.Contracts.csproj" />
     <ProjectReference Include="..\AutoService.Infrastructure.InMemory\AutoService.Infrastructure.InMemory.csproj" />
     <ProjectReference Include="..\AutoService.Application\AutoService.Application.csproj" />
+    <ProjectReference Include="..\AutoService.Infrastructure.EfCore\AutoService.Infrastructure.EfCore.csproj" />
   </ItemGroup>
 
 </Project>
