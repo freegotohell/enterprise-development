@@ -1,11 +1,18 @@
 using AutoService.Contracts.Interfaces;
-using AutoService.Infrastructure.InMemory;
+using AutoService.Infrastructure.EfCore;
+using AutoService.Infrastructure.EfCore.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using AutoService.Api.Middleware;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddInMemoryInfrastructure();
+builder.AddServiceDefaults();
+
+var connectionString = builder.Configuration.GetConnectionString("autoservice")
+    ?? throw new InvalidOperationException("Connection string 'autoservice' was not found");
+
+builder.Services.AddEfCoreInfrastructure(connectionString);
 
 // Add services to the container.
 builder.Services.AddScoped<IClientService, AutoService.Application.Services.ClientService>();
@@ -26,6 +33,16 @@ builder.Services
     });
 
 WebApplication app = builder.Build();
+
+app.MapDefaultEndpoints();
+
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    AutoServiceDbContext dbContext = scope.ServiceProvider.GetRequiredService<AutoServiceDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+    await EfCoreDataSeeder.SeedAsync(dbContext);
+}
 
 if (app.Environment.IsDevelopment())
 {

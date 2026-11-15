@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
   </ItemGroup>
 
@@ -17,6 +21,7 @@
     <ProjectReference Include="..\AutoService.Infrastructure.InMemory\AutoService.Infrastructure.InMemory.csproj" />
     <ProjectReference Include="..\AutoService.Application\AutoService.Application.csproj" />
     <ProjectReference Include="..\AutoService.Infrastructure.EfCore\AutoService.Infrastructure.EfCore.csproj" />
+    <ProjectReference Include="..\AutoService.ServiceDefaults\AutoService.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

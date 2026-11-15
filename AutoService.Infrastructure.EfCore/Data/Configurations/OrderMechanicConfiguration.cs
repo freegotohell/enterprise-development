@@ -17,5 +17,7 @@ public class OrderMechanicConfiguration : IEntityTypeConfiguration<OrderMechanic
         builder.Property(orderMechanic => orderMechanic.RepairOrderId).HasColumnName("repair_order_id");
 
         builder.Property(orderMechanic => orderMechanic.MechanicId).HasColumnName("mechanic_id");
+
+        builder.HasIndex(x => new { x.RepairOrderId, x.MechanicId }).IsUnique();
     }
 }

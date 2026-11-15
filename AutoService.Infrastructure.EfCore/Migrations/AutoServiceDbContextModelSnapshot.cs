@@ -128,7 +128,8 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.HasIndex("MechanicId");
 
-                    b.HasIndex("RepairOrderId");
+                    b.HasIndex("RepairOrderId", "MechanicId")
+                        .IsUnique();
 
                     b.ToTable("order_mechanics", (string)null);
                 });
@@ -222,6 +223,98 @@ namespace AutoService.Infrastructure.EfCore.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("work_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = 5,
+                            Cost = 2500m,
+                            Description = "Engine Oil And Oil Filter Replacement",
+                            Duration = 60,
+                            Name = "Oil And Filter Change"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = 3,
+                            Cost = 5000m,
+                            Description = "Computerized Engine Diagnostic Testing",
+                            Duration = 120,
+                            Name = "Engine Diagnostics"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = 0,
+                            Cost = 15000m,
+                            Description = "Repair Of Engine Components And Systems",
+                            Duration = 360,
+                            Name = "Engine Repair"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = 1,
+                            Cost = 20000m,
+                            Description = "Clutch Assembly Replacement",
+                            Duration = 360,
+                            Name = "Clutch Replacement"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = 2,
+                            Cost = 4000m,
+                            Description = "Electrical System Diagnostic And Troubleshooting",
+                            Duration = 120,
+                            Name = "Electrical Diagnostics"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = 2,
+                            Cost = 7000m,
+                            Description = "Repair And Restoration Of Electrical Wiring",
+                            Duration = 180,
+                            Name = "Electrical Wiring Repair"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = 4,
+                            Cost = 25000m,
+                            Description = "Repair Of Vehicle Body Damage",
+                            Duration = 480,
+                            Name = "Body Repair"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = 5,
+                            Cost = 8000m,
+                            Description = "Scheduled Vehicle Maintenance And Inspection",
+                            Duration = 180,
+                            Name = "Routine Vehicle Maintenance"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = 0,
+                            Cost = 50000m,
+                            Description = "Complete Engine Rebuild And Overhaul",
+                            Duration = 720,
+                            Name = "Engine Overhaul"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = 1,
+                            Cost = 6000m,
+                            Description = "Transmission System Diagnostic And Inspection",
+                            Duration = 120,
+                            Name = "Transmission Diagnostics"
+                        });
                 });
 
             modelBuilder.Entity("AutoService.Domain.Entities.Car", b =>

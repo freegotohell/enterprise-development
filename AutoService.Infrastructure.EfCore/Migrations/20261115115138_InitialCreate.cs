@@ -4,6 +4,8 @@ using MySql.EntityFrameworkCore.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace AutoService.Infrastructure.EfCore.Migrations
 {
     /// <inheritdoc />
@@ -171,6 +173,23 @@ namespace AutoService.Infrastructure.EfCore.Migrations
                         onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySQL:Charset", "utf8mb4");
+
+            migrationBuilder.InsertData(
+                table: "work_types",
+                columns: new[] { "id", "category", "cost", "description", "duration", "name" },
+                values: new object[,]
+                {
+                    { 1, 5, 2500m, "Engine Oil And Oil Filter Replacement", 60, "Oil And Filter Change" },
+                    { 2, 3, 5000m, "Computerized Engine Diagnostic Testing", 120, "Engine Diagnostics" },
+                    { 3, 0, 15000m, "Repair Of Engine Components And Systems", 360, "Engine Repair" },
+                    { 4, 1, 20000m, "Clutch Assembly Replacement", 360, "Clutch Replacement" },
+                    { 5, 2, 4000m, "Electrical System Diagnostic And Troubleshooting", 120, "Electrical Diagnostics" },
+                    { 6, 2, 7000m, "Repair And Restoration Of Electrical Wiring", 180, "Electrical Wiring Repair" },
+                    { 7, 4, 25000m, "Repair Of Vehicle Body Damage", 480, "Body Repair" },
+                    { 8, 5, 8000m, "Scheduled Vehicle Maintenance And Inspection", 180, "Routine Vehicle Maintenance" },
+                    { 9, 0, 50000m, "Complete Engine Rebuild And Overhaul", 720, "Engine Overhaul" },
+                    { 10, 1, 6000m, "Transmission System Diagnostic And Inspection", 120, "Transmission Diagnostics" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_cars_client_id",

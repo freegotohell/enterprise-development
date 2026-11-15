@@ -8,7 +8,7 @@ namespace AutoService.Infrastructure.EfCore.Repositories;
 /// <summary>
 /// Repository for repair order data operations
 /// </summary>
-public class RepairOrderRepository(AutoServiceDbContext context): IRepairOrderRepository
+public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderRepository
 {
     private IQueryable<RepairOrder> GetOrdersWithDetails()
     {
