@@ -43,47 +43,52 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
     /// <inheritdoc />
     public async Task<bool> UpdateAsync(RepairOrder entity)
     {
-        RepairOrder? existingOrder = await context.RepairOrders
-            .Include(order => order.Mechanics)
-            .Include(order => order.Works)
-            .FirstOrDefaultAsync(order => order.Id == entity.Id);
+        RepairOrder? existingOrder = await context.RepairOrders.FirstOrDefaultAsync(order => order.Id == entity.Id);
 
         if (existingOrder is null)
         {
             return false;
         }
 
+        await context.Entry(existingOrder).Collection(order => order.Mechanics).LoadAsync();
+
+        await context.Entry(existingOrder).Collection(order => order.Works).LoadAsync();
+
         List<OrderMechanic> newMechanics = entity.Mechanics;
         List<OrderWork> newWorks = entity.Works;
 
-        context.OrderMechanics.RemoveRange(existingOrder.Mechanics);
-        context.OrderWorks.RemoveRange(existingOrder.Works);
+        existingOrder.ClientId = entity.ClientId;
+        existingOrder.CarId = entity.CarId;
+        existingOrder.AdmissionDate = entity.AdmissionDate;
+        existingOrder.ReleaseDate = entity.ReleaseDate;
 
-        context.Entry(existingOrder).State = EntityState.Detached;
+        var newMechanicIds = entity.Mechanics.Select(orderMechanic => orderMechanic.MechanicId).ToHashSet();
+        var newWorkTypeIds = entity.Works.Select(orderWork => orderWork.WorkTypeId).ToHashSet();
 
-        entity.Mechanics = [];
-        entity.Works = [];
+        context.OrderMechanics.RemoveRange(existingOrder.Mechanics.Where(orderMechanic => !newMechanicIds.Contains(orderMechanic.MechanicId)));
+        context.OrderWorks.RemoveRange(existingOrder.Works.Where(orderWork => !newWorkTypeIds.Contains(orderWork.WorkTypeId)));
 
-        context.RepairOrders.Attach(entity);
-        context.Entry(entity).State = EntityState.Modified;
+        var existingMechanicIds = existingOrder.Mechanics.Select(orderMechanic => orderMechanic.MechanicId).ToHashSet();
 
-        entity.Mechanics = newMechanics;
-        entity.Works = newWorks;
-
-        foreach (OrderMechanic orderMechanic in entity.Mechanics)
+        foreach (var mechanicId in newMechanicIds.Except(existingMechanicIds))
         {
-            orderMechanic.RepairOrderId = entity.Id;
-            orderMechanic.RepairOrder = entity;
+            existingOrder.Mechanics.Add(new OrderMechanic
+            {
+                RepairOrderId = existingOrder.Id,
+                MechanicId = mechanicId
+            });
         }
 
-        foreach (OrderWork orderWork in entity.Works)
-        {
-            orderWork.RepairOrderId = entity.Id;
-            orderWork.RepairOrder = entity;
-        }
+        var existingWorkTypeIds = existingOrder.Works.Select(orderWork => orderWork.WorkTypeId).ToHashSet();
 
-        context.OrderMechanics.AddRange(entity.Mechanics);
-        context.OrderWorks.AddRange(entity.Works);
+        foreach (var workTypeId in newWorkTypeIds.Except(existingWorkTypeIds))
+        {
+            existingOrder.Works.Add(new OrderWork
+            {
+                RepairOrderId = existingOrder.Id,
+                WorkTypeId = workTypeId
+            });
+        }
 
         await context.SaveChangesAsync();
 
