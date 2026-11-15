@@ -23,7 +23,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting all mechanics");
 
-        var mechanics = await mechanicRepository.GetAllAsync();
+        List<Mechanic> mechanics = await mechanicRepository.GetAllAsync();
 
         return [.. mechanics.Select(ToDto)];
     }
@@ -33,7 +33,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         return mechanic is null ? null : ToDto(mechanic);
     }
@@ -43,7 +43,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting clients for mechanic with ID {MechanicId}", mechanicId);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
         if (mechanic is null)
         {
@@ -52,7 +52,7 @@ public class MechanicService(
             return null;
         }
 
-        var orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
+        List<RepairOrder> orders = await repairOrderRepository.GetByMechanicIdAsync(mechanicId);
 
         return [.. orders
             .Select(order => order.Client)
@@ -71,7 +71,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics for work type with ID {WorkTypeId}", workTypeId);
 
-        var workType = await workTypeRepository.GetByIdAsync(workTypeId);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(workTypeId);
 
         if (workType is null)
         {
@@ -80,10 +80,10 @@ public class MechanicService(
             return null;
         }
 
-        var specializations = Enum.GetValues<MechanicSpecialization>().Where(specialization => 
+        var specializations = Enum.GetValues<MechanicSpecialization>().Where(specialization =>
             MechanicSpecializationMapping.Matches(specialization, workType.Category)).ToList();
 
-        var mechanics = await mechanicRepository.GetBySpecializationsAsync(specializations);
+        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationsAsync(specializations);
 
         return [.. mechanics.OrderBy(mechanic => mechanic.FullName).Select(ToDto)];
     }
@@ -93,7 +93,7 @@ public class MechanicService(
     {
         logger.LogInformation("Getting mechanics with specialization {Specialization}", specialization);
 
-        var mechanics = await mechanicRepository.GetBySpecializationsAsync([specialization]);
+        List<Mechanic> mechanics = await mechanicRepository.GetBySpecializationsAsync([specialization]);
 
         return [.. mechanics.Select(ToDto)];
     }
@@ -123,7 +123,7 @@ public class MechanicService(
     {
         logger.LogInformation("Updating mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {
@@ -156,7 +156,7 @@ public class MechanicService(
     {
         logger.LogInformation("Deleting mechanic with ID {MechanicId}", id);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(id);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(id);
 
         if (mechanic is null)
         {

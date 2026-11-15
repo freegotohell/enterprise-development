@@ -138,7 +138,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             .DefaultIfEmpty(0)
             .Max() + 1;
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Id = nextOrderMechanicId++;
             orderMechanic.RepairOrderId = order.Id;
@@ -151,7 +151,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             .DefaultIfEmpty(0)
             .Max() + 1;
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.Id = nextOrderWorkId++;
             orderWork.RepairOrderId = order.Id;

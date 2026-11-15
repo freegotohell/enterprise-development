@@ -17,7 +17,7 @@ public class AutoServiceDbContextFactory : IDesignTimeDbContextFactory<AutoServi
             throw new InvalidOperationException("The environment variable 'AUTOSERVICE_CONNECTION_STRING' is not set");
         }
 
-        var options = new DbContextOptionsBuilder<AutoServiceDbContext>().UseMySQL(connectionString).Options;
+        DbContextOptions<AutoServiceDbContext> options = new DbContextOptionsBuilder<AutoServiceDbContext>().UseMySQL(connectionString).Options;
 
         return new AutoServiceDbContext(options);
     }

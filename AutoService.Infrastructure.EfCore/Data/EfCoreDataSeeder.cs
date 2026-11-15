@@ -2,6 +2,7 @@
 using AutoService.Domain.Shared.Enums;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AutoService.Infrastructure.EfCore.Data;
 
@@ -20,29 +21,29 @@ public static class EfCoreDataSeeder
             return;
         }
 
-        var workTypes = await context.WorkTypes.OrderBy(x => x.Id).ToListAsync();
+        List<WorkType> workTypes = await context.WorkTypes.OrderBy(x => x.Id).ToListAsync();
 
         if (workTypes.Count == 0)
         {
             throw new InvalidOperationException("No work types were found");
         }
 
-        await using var transaction = await context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
 
         try
         {
-            var clients = CreateClients();
-            var mechanics = CreateMechanics();
+            List<Client> clients = CreateClients();
+            List<Mechanic> mechanics = CreateMechanics();
 
             context.Clients.AddRange(clients);
             context.Mechanics.AddRange(mechanics);
             await context.SaveChangesAsync();
 
-            var cars = CreateCars(clients);
+            List<Car> cars = CreateCars(clients);
             context.Cars.AddRange(cars);
             await context.SaveChangesAsync();
 
-            var orders = CreateOrders(clients, cars, mechanics, workTypes);
+            List<RepairOrder> orders = CreateOrders(clients, cars, mechanics, workTypes);
             context.RepairOrders.AddRange(orders);
             await context.SaveChangesAsync();
 
@@ -105,9 +106,9 @@ public static class EfCoreDataSeeder
 
         for (var i = 0; i < 20; i++)
         {
-            var car = faker.PickRandom(cars);
-            var client = clients.First(x => x.Id == car.ClientId);
-            var admissionDate = faker.Date.Recent(20);
+            Car car = faker.PickRandom(cars);
+            Client client = clients.First(x => x.Id == car.ClientId);
+            DateTime admissionDate = faker.Date.Recent(20);
 
             var order = new RepairOrder
             {
@@ -119,7 +120,7 @@ public static class EfCoreDataSeeder
 
             var selectedWorks = faker.PickRandom(workTypes, 3).ToList();
 
-            foreach (var workType in selectedWorks)
+            foreach (WorkType? workType in selectedWorks)
             {
                 order.Works.Add(new OrderWork
                 {
@@ -127,7 +128,7 @@ public static class EfCoreDataSeeder
                     WorkType = workType
                 });
 
-                var mechanic = SelectMechanic(workType.Category, mechanics, faker);
+                Mechanic mechanic = SelectMechanic(workType.Category, mechanics, faker);
 
                 if (order.Mechanics.All(x => x.Mechanic.Id != mechanic.Id))
                 {

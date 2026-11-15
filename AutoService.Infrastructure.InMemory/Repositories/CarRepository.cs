@@ -10,7 +10,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 public class CarRepository(AutoServiceContext context) : ICarRepository
 {
     private int nextId = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
-    
+
     /// <inheritdoc />
     public Task<List<Car>> GetAllAsync()
     {

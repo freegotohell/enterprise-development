@@ -10,7 +10,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 public class ClientRepository(AutoServiceContext context) : IClientRepository
 {
     private int nextId = context.Clients.Count == 0 ? 1 : context.Clients.Max(client => client.Id) + 1;
-    
+
     /// <inheritdoc />
     public Task<List<Client>> GetAllAsync()
     {

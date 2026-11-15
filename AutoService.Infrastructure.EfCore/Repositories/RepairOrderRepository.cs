@@ -43,7 +43,7 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
     /// <inheritdoc />
     public async Task<bool> UpdateAsync(RepairOrder entity)
     {
-        var existingOrder = await context.RepairOrders
+        RepairOrder? existingOrder = await context.RepairOrders
             .Include(order => order.Mechanics)
             .Include(order => order.Works)
             .FirstOrDefaultAsync(order => order.Id == entity.Id);
@@ -53,8 +53,8 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
             return false;
         }
 
-        var newMechanics = entity.Mechanics;
-        var newWorks = entity.Works;
+        List<OrderMechanic> newMechanics = entity.Mechanics;
+        List<OrderWork> newWorks = entity.Works;
 
         context.OrderMechanics.RemoveRange(existingOrder.Mechanics);
         context.OrderWorks.RemoveRange(existingOrder.Works);
@@ -70,13 +70,13 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
         entity.Mechanics = newMechanics;
         entity.Works = newWorks;
 
-        foreach (var orderMechanic in entity.Mechanics)
+        foreach (OrderMechanic orderMechanic in entity.Mechanics)
         {
             orderMechanic.RepairOrderId = entity.Id;
             orderMechanic.RepairOrder = entity;
         }
 
-        foreach (var orderWork in entity.Works)
+        foreach (OrderWork orderWork in entity.Works)
         {
             orderWork.RepairOrderId = entity.Id;
             orderWork.RepairOrder = entity;
@@ -93,7 +93,7 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
     /// <inheritdoc />
     public async Task<bool> DeleteAsync(RepairOrder entity)
     {
-        var existingOrder = await context.RepairOrders.FindAsync(entity.Id);
+        RepairOrder? existingOrder = await context.RepairOrders.FindAsync(entity.Id);
 
         if (existingOrder is null)
         {

@@ -23,7 +23,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting all repair orders");
 
-        var orders = await repairOrderRepository.GetAllAsync();
+        List<RepairOrder> orders = await repairOrderRepository.GetAllAsync();
 
         return [.. orders.Select(ToDto)];
     }
@@ -33,7 +33,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting repair order with ID {RepairOrderId}", id);
 
-        var order = await repairOrderRepository.GetByIdAsync(id);
+        RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         return order is null ? null : ToDto(order);
     }
@@ -43,7 +43,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting repair orders for client with ID {ClientId}", clientId);
 
-        var client = await clientRepository.GetByIdAsync(clientId);
+        Client? client = await clientRepository.GetByIdAsync(clientId);
 
         if (client is null)
         {
@@ -62,7 +62,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting repair orders for car with ID {CarId}", carId);
 
-        var car = await carRepository.GetByIdAsync(carId);
+        Car? car = await carRepository.GetByIdAsync(carId);
 
         if (car is null)
         {
@@ -81,7 +81,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting repair orders for mechanic with ID {MechanicId}", mechanicId);
 
-        var mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
+        Mechanic? mechanic = await mechanicRepository.GetByIdAsync(mechanicId);
 
         if (mechanic is null)
         {
@@ -100,7 +100,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Getting repair orders for work type with ID {WorkTypeId}", workTypeId);
 
-        var workType = await workTypeRepository.GetByIdAsync(workTypeId);
+        WorkType? workType = await workTypeRepository.GetByIdAsync(workTypeId);
 
         if (workType is null)
         {
@@ -119,7 +119,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Calculating total cost for repair order with ID {RepairOrderId}", id);
 
-        var order = await repairOrderRepository.GetByIdAsync(id);
+        RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
@@ -142,7 +142,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Creating a new repair order");
 
-        var client = await clientRepository.GetByIdAsync(dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -151,7 +151,7 @@ public class RepairOrderService(
             return null;
         }
 
-        var car = await carRepository.GetByIdAsync(dto.CarId);
+        Car? car = await carRepository.GetByIdAsync(dto.CarId);
 
         if (car is null || car.ClientId != client.Id)
         {
@@ -160,7 +160,7 @@ public class RepairOrderService(
             return null;
         }
 
-        var mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
+        List<Mechanic> mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
@@ -169,7 +169,7 @@ public class RepairOrderService(
             return null;
         }
 
-        var workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
+        List<WorkType> workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
@@ -188,7 +188,7 @@ public class RepairOrderService(
             ReleaseDate = dto.ReleaseDate
         };
 
-        foreach (var mechanic in mechanics)
+        foreach (Mechanic mechanic in mechanics)
         {
             var orderMechanic = new OrderMechanic
             {
@@ -201,7 +201,7 @@ public class RepairOrderService(
             order.Mechanics.Add(orderMechanic);
         }
 
-        foreach (var workType in workTypes)
+        foreach (WorkType workType in workTypes)
         {
             var orderWork = new OrderWork
             {
@@ -216,12 +216,12 @@ public class RepairOrderService(
 
         order = await repairOrderRepository.AddAsync(order);
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Mechanic.Orders.Add(orderMechanic);
         }
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.WorkType.Orders.Add(orderWork);
         }
@@ -239,7 +239,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Updating repair order with ID {RepairOrderId}", id);
 
-        var order = await repairOrderRepository.GetByIdAsync(id);
+        RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
@@ -248,7 +248,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.NotFound);
         }
 
-        var client = await clientRepository.GetByIdAsync(dto.ClientId);
+        Client? client = await clientRepository.GetByIdAsync(dto.ClientId);
 
         if (client is null)
         {
@@ -257,7 +257,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var car = await carRepository.GetByIdAsync(dto.CarId);
+        Car? car = await carRepository.GetByIdAsync(dto.CarId);
 
         if (car is null || car.ClientId != client.Id)
         {
@@ -266,7 +266,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
+        List<Mechanic> mechanics = await mechanicRepository.GetByIdsAsync(dto.MechanicIds);
 
         if (mechanics.Count != dto.MechanicIds.Distinct().Count())
         {
@@ -275,7 +275,7 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
+        List<WorkType> workTypes = await workTypeRepository.GetByIdsAsync(dto.WorkTypeIds);
 
         if (workTypes.Count != dto.WorkTypeIds.Distinct().Count())
         {
@@ -298,7 +298,7 @@ public class RepairOrderService(
             ReleaseDate = dto.ReleaseDate
         };
 
-        foreach (var mechanic in mechanics)
+        foreach (Mechanic mechanic in mechanics)
         {
             var orderMechanic = new OrderMechanic
             {
@@ -311,7 +311,7 @@ public class RepairOrderService(
             updatedOrder.Mechanics.Add(orderMechanic);
         }
 
-        foreach (var workType in workTypes)
+        foreach (WorkType workType in workTypes)
         {
             var orderWork = new OrderWork
             {
@@ -336,12 +336,12 @@ public class RepairOrderService(
         order.Client.Orders.Remove(order);
         order.Car.Orders.Remove(order);
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Mechanic.Orders.Remove(orderMechanic);
         }
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.WorkType.Orders.Remove(orderWork);
         }
@@ -349,12 +349,12 @@ public class RepairOrderService(
         client.Orders.Add(updatedOrder);
         car.Orders.Add(updatedOrder);
 
-        foreach (var orderMechanic in updatedOrder.Mechanics)
+        foreach (OrderMechanic orderMechanic in updatedOrder.Mechanics)
         {
             orderMechanic.Mechanic.Orders.Add(orderMechanic);
         }
 
-        foreach (var orderWork in updatedOrder.Works)
+        foreach (OrderWork orderWork in updatedOrder.Works)
         {
             orderWork.WorkType.Orders.Add(orderWork);
         }
@@ -369,7 +369,7 @@ public class RepairOrderService(
     {
         logger.LogInformation("Deleting repair order with ID {RepairOrderId}", id);
 
-        var order = await repairOrderRepository.GetByIdAsync(id);
+        RepairOrder? order = await repairOrderRepository.GetByIdAsync(id);
 
         if (order is null)
         {
@@ -390,12 +390,12 @@ public class RepairOrderService(
         order.Client.Orders.Remove(order);
         order.Car.Orders.Remove(order);
 
-        foreach (var orderMechanic in order.Mechanics)
+        foreach (OrderMechanic orderMechanic in order.Mechanics)
         {
             orderMechanic.Mechanic.Orders.Remove(orderMechanic);
         }
 
-        foreach (var orderWork in order.Works)
+        foreach (OrderWork orderWork in order.Works)
         {
             orderWork.WorkType.Orders.Remove(orderWork);
         }

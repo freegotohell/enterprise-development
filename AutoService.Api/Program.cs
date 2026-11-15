@@ -4,6 +4,7 @@ using AutoService.Infrastructure.EfCore.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using AutoService.Api.Middleware;
+using AutoService.ServiceDefaults;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
