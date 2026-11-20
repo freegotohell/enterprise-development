@@ -114,6 +114,7 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     [HttpPost]
     [ProducesResponseType(typeof(MechanicDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<MechanicDto>> Create(UpsertMechanicDto dto)
     {
         MechanicDto mechanic = await mechanicService.CreateAsync(dto);
@@ -129,6 +130,7 @@ public class MechanicsController(IMechanicService mechanicService, ILogger<Mecha
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(MechanicDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<MechanicDto>> Update(int id, UpsertMechanicDto dto)

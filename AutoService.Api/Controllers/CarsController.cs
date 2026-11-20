@@ -76,6 +76,7 @@ public class CarsController(ICarService carService, ILogger<CarsController> logg
     [HttpPost]
     [ProducesResponseType(typeof(CarDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<CarDto>> Create(UpsertCarDto dto)
     {
         CarDto? car = await carService.CreateAsync(dto);
@@ -98,6 +99,7 @@ public class CarsController(ICarService carService, ILogger<CarsController> logg
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(CarDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<CarDto>> Update(int id, UpsertCarDto dto)
