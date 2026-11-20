@@ -11,6 +11,7 @@ public class UpsertClientDto
     /// Full name of the client
     /// </summary>
     [Required]
+    [StringLength(200)]
     public required string FullName { get; init; }
 
     /// <summary>
@@ -18,5 +19,6 @@ public class UpsertClientDto
     /// </summary>
     [Required]
     [Phone]
+    [StringLength(32)]
     public required string Phone { get; init; }
 }

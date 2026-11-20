@@ -10,7 +10,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class MechanicRepository(AutoServiceContext context) : IMechanicRepository
 {
-    private int nextId = context.Mechanics.Count == 0 ? 1 : context.Mechanics.Max(mechanic => mechanic.Id) + 1;
+    private int _nextId = context.Mechanics.Count == 0 ? 1 : context.Mechanics.Max(mechanic => mechanic.Id) + 1;
 
     /// <inheritdoc />
     public Task<List<Mechanic>> GetAllAsync()
@@ -34,7 +34,7 @@ public class MechanicRepository(AutoServiceContext context) : IMechanicRepositor
             return Task.FromResult(entity);
         }
 
-        entity.Id = nextId++;
+        entity.Id = _nextId++;
         context.Mechanics.Add(entity);
 
         return Task.FromResult(entity);

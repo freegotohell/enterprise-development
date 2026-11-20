@@ -14,11 +14,12 @@ public class CarConfiguration : IEntityTypeConfiguration<Car>
 
         builder.Property(car => car.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
-        builder.Property(car => car.LicensePlate).HasColumnName("license_plate").IsRequired();
+        builder.Property(car => car.LicensePlate).HasColumnName("license_plate").HasMaxLength(16).IsRequired();
+        builder.HasIndex(entity => entity.LicensePlate).IsUnique();
 
-        builder.Property(car => car.Brand).HasColumnName("brand").IsRequired();
+        builder.Property(car => car.Brand).HasColumnName("brand").HasMaxLength(100).IsRequired();
 
-        builder.Property(car => car.Model).HasColumnName("model").IsRequired();
+        builder.Property(car => car.Model).HasColumnName("model").HasMaxLength(100).IsRequired();
 
         builder.Property(car => car.Year).HasColumnName("year");
 

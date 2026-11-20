@@ -28,7 +28,8 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("Brand")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
                         .HasColumnName("brand");
 
                     b.Property<int>("ClientId")
@@ -37,12 +38,14 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("LicensePlate")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("license_plate");
 
                     b.Property<string>("Model")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
                         .HasColumnName("model");
 
                     b.Property<int?>("Year")
@@ -52,6 +55,9 @@ namespace AutoService.Infrastructure.EfCore.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("LicensePlate")
+                        .IsUnique();
 
                     b.ToTable("cars", (string)null);
                 });
@@ -65,12 +71,14 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("full_name");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)")
                         .HasColumnName("phone");
 
                     b.HasKey("Id");
@@ -91,7 +99,8 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("full_name");
 
                     b.Property<string>("PassportNumber")
@@ -105,6 +114,9 @@ namespace AutoService.Infrastructure.EfCore.Migrations
                         .HasColumnName("specialization");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PassportNumber")
+                        .IsUnique();
 
                     b.ToTable("mechanics", (string)null);
                 });
@@ -208,7 +220,8 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
                         .HasColumnName("description");
 
                     b.Property<int>("Duration")
@@ -217,7 +230,8 @@ namespace AutoService.Infrastructure.EfCore.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");

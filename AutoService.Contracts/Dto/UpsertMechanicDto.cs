@@ -19,6 +19,7 @@ public class UpsertMechanicDto
     /// Full name of the mechanic
     /// </summary>
     [Required]
+    [StringLength(200)]
     public required string FullName { get; init; }
 
     /// <summary>

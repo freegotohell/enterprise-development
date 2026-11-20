@@ -216,19 +216,6 @@ public class RepairOrderService(
 
         order = await repairOrderRepository.AddAsync(order);
 
-        foreach (OrderMechanic orderMechanic in order.Mechanics)
-        {
-            orderMechanic.Mechanic.Orders.Add(orderMechanic);
-        }
-
-        foreach (OrderWork orderWork in order.Works)
-        {
-            orderWork.WorkType.Orders.Add(orderWork);
-        }
-
-        client.Orders.Add(order);
-        car.Orders.Add(order);
-
         logger.LogInformation("Created repair order {RepairOrderId}", order.Id);
 
         return ToDto(order);
@@ -284,9 +271,6 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.InvalidReference);
         }
 
-        var oldMechanics = order.Mechanics.ToList();
-        var oldWorks = order.Works.ToList();
-
         var updatedOrder = new RepairOrder
         {
             Id = order.Id,
@@ -333,32 +317,6 @@ public class RepairOrderService(
             return new UpdateResult<RepairOrderDto>(UpdateStatus.Failed);
         }
 
-        order.Client.Orders.Remove(order);
-        order.Car.Orders.Remove(order);
-
-        foreach (OrderMechanic orderMechanic in order.Mechanics)
-        {
-            orderMechanic.Mechanic.Orders.Remove(orderMechanic);
-        }
-
-        foreach (OrderWork orderWork in order.Works)
-        {
-            orderWork.WorkType.Orders.Remove(orderWork);
-        }
-
-        client.Orders.Add(updatedOrder);
-        car.Orders.Add(updatedOrder);
-
-        foreach (OrderMechanic orderMechanic in updatedOrder.Mechanics)
-        {
-            orderMechanic.Mechanic.Orders.Add(orderMechanic);
-        }
-
-        foreach (OrderWork orderWork in updatedOrder.Works)
-        {
-            orderWork.WorkType.Orders.Add(orderWork);
-        }
-
         logger.LogInformation("Updated repair order {RepairOrderId}", order.Id);
 
         return new UpdateResult<RepairOrderDto>(UpdateStatus.Success, ToDto(updatedOrder));
@@ -385,19 +343,6 @@ public class RepairOrderService(
             logger.LogWarning("Repair order with ID {RepairOrderId} could not be deleted", id);
 
             return DeleteResult.NotFound;
-        }
-
-        order.Client.Orders.Remove(order);
-        order.Car.Orders.Remove(order);
-
-        foreach (OrderMechanic orderMechanic in order.Mechanics)
-        {
-            orderMechanic.Mechanic.Orders.Remove(orderMechanic);
-        }
-
-        foreach (OrderWork orderWork in order.Works)
-        {
-            orderWork.WorkType.Orders.Remove(orderWork);
         }
 
         logger.LogInformation("Deleted repair order {RepairOrderId}", order.Id);

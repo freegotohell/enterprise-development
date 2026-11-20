@@ -57,7 +57,6 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
         };
 
         car = await carRepository.AddAsync(car);
-        client.Cars.Add(car);
 
         logger.LogInformation("Car with ID {CarId} was created", car.Id);
 
@@ -87,16 +86,8 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
             return new UpdateResult<CarDto>(UpdateStatus.InvalidReference);
         }
 
-        if (car.ClientId != client.Id)
-        {
-            Client oldClient = car.Client;
-
-            oldClient.Cars.Remove(car);
-            client.Cars.Add(car);
-
-            car.ClientId = client.Id;
-            car.Client = client;
-        }
+        car.ClientId = client.Id;
+        car.Client = client;
 
         car.LicensePlate = dto.LicensePlate;
         car.Brand = dto.Brand;
@@ -148,8 +139,6 @@ public class CarService(ICarRepository carRepository, IClientRepository clientRe
 
             return DeleteResult.NotFound;
         }
-
-        car.Client.Cars.Remove(car);
 
         logger.LogInformation("Car with ID {CarId} was deleted", id);
 

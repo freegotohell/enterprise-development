@@ -9,7 +9,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRepository
 {
-    private int nextId = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
+    private int _nextId = context.RepairOrders.Count == 0 ? 1 : context.RepairOrders.Max(order => order.Id) + 1;
 
     /// <inheritdoc />
     public Task<List<RepairOrder>> GetAllAsync()
@@ -33,9 +33,10 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             return Task.FromResult(entity);
         }
 
-        entity.Id = nextId++;
+        entity.Id = _nextId++;
         AssignRelationshipIds(entity);
         context.RepairOrders.Add(entity);
+        AddInverseLinks(entity);
 
         return Task.FromResult(entity);
     }
@@ -50,8 +51,10 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             return Task.FromResult(false);
         }
 
+        RemoveInverseLinks(context.RepairOrders[index]);
         AssignRelationshipIds(entity);
         context.RepairOrders[index] = entity;
+        AddInverseLinks(entity);
 
         return Task.FromResult(true);
     }
@@ -67,6 +70,7 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
         }
 
         context.RepairOrders.Remove(existing);
+        RemoveInverseLinks(existing);
 
         return Task.FromResult(true);
     }
@@ -128,6 +132,38 @@ public class RepairOrderRepository(AutoServiceContext context) : IRepairOrderRep
             .ToList();
 
         return Task.FromResult(result);
+    }
+
+    private static void AddInverseLinks(RepairOrder order)
+    {
+        order.Client.Orders.Add(order);
+        order.Car.Orders.Add(order);
+
+        foreach (OrderMechanic link in order.Mechanics)
+        {
+            link.Mechanic.Orders.Add(link);
+        }
+
+        foreach (OrderWork link in order.Works)
+        {
+            link.WorkType.Orders.Add(link);
+        }
+    }
+
+    private static void RemoveInverseLinks(RepairOrder order)
+    {
+        order.Client.Orders.Remove(order);
+        order.Car.Orders.Remove(order);
+
+        foreach (OrderMechanic link in order.Mechanics)
+        {
+            link.Mechanic.Orders.Remove(link);
+        }
+
+        foreach (OrderWork link in order.Works)
+        {
+            link.WorkType.Orders.Remove(link);
+        }
     }
 
     private void AssignRelationshipIds(RepairOrder order)

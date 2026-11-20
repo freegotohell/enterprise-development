@@ -15,7 +15,7 @@ public class WorkTypeConfiguration : IEntityTypeConfiguration<WorkType>
 
         builder.Property(workType => workType.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
-        builder.Property(workType => workType.Name).HasColumnName("name").IsRequired();
+        builder.Property(workType => workType.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
 
         builder.Property(workType => workType.Category).HasColumnName("category").HasConversion<int>();
 
@@ -23,7 +23,7 @@ public class WorkTypeConfiguration : IEntityTypeConfiguration<WorkType>
 
         builder.Property(workType => workType.Duration).HasColumnName("duration").HasColumnType("int").HasConversion(duration => checked((int)duration.TotalMinutes), minutes => TimeSpan.FromMinutes(minutes));
 
-        builder.Property(workType => workType.Description).HasColumnName("description").IsRequired();
+        builder.Property(workType => workType.Description).HasColumnName("description").HasMaxLength(2000).IsRequired();
 
         builder.HasMany(workType => workType.Orders).WithOne(orderWork => orderWork.WorkType).HasForeignKey(orderWork => orderWork.WorkTypeId).OnDelete(DeleteBehavior.Restrict);
 

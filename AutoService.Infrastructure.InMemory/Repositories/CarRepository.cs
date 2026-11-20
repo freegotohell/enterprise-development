@@ -9,7 +9,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class CarRepository(AutoServiceContext context) : ICarRepository
 {
-    private int nextId = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
+    private int _nextId = context.Cars.Count == 0 ? 1 : context.Cars.Max(car => car.Id) + 1;
 
     /// <inheritdoc />
     public Task<List<Car>> GetAllAsync()
@@ -33,8 +33,9 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
             return Task.FromResult(entity);
         }
 
-        entity.Id = nextId++;
+        entity.Id = _nextId++;
         context.Cars.Add(entity);
+        entity.Client.Cars.Add(entity);
 
         return Task.FromResult(entity);
     }
@@ -49,7 +50,13 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
             return Task.FromResult(false);
         }
 
+        foreach (Client client in context.Clients)
+        {
+            client.Cars.Remove(context.Cars[index]);
+        }
+
         context.Cars[index] = entity;
+        entity.Client.Cars.Add(entity);
 
         return Task.FromResult(true);
     }
@@ -65,6 +72,7 @@ public class CarRepository(AutoServiceContext context) : ICarRepository
         }
 
         context.Cars.Remove(existing);
+        existing.Client.Cars.Remove(existing);
 
         return Task.FromResult(true);
     }

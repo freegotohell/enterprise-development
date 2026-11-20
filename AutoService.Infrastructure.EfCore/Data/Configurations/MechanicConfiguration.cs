@@ -15,8 +15,9 @@ public class MechanicConfiguration : IEntityTypeConfiguration<Mechanic>
         builder.Property(mechanic => mechanic.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
         builder.Property(mechanic => mechanic.PassportNumber).HasColumnName("passport_number").HasMaxLength(10).IsRequired();
+        builder.HasIndex(entity => entity.PassportNumber).IsUnique();
 
-        builder.Property(mechanic => mechanic.FullName).HasColumnName("full_name").IsRequired();
+        builder.Property(mechanic => mechanic.FullName).HasColumnName("full_name").HasMaxLength(200).IsRequired();
 
         builder.Property(mechanic => mechanic.Specialization).HasColumnName("specialization").HasConversion<int>();
 

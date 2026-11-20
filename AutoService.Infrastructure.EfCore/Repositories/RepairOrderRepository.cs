@@ -54,9 +54,6 @@ public class RepairOrderRepository(AutoServiceDbContext context) : IRepairOrderR
 
         await context.Entry(existingOrder).Collection(order => order.Works).LoadAsync();
 
-        List<OrderMechanic> newMechanics = entity.Mechanics;
-        List<OrderWork> newWorks = entity.Works;
-
         existingOrder.ClientId = entity.ClientId;
         existingOrder.CarId = entity.CarId;
         existingOrder.AdmissionDate = entity.AdmissionDate;

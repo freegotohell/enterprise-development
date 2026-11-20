@@ -56,7 +56,7 @@ public class MechanicService(
 
         return [.. orders
             .Select(order => order.Client)
-            .Distinct()
+            .DistinctBy(client => client.Id)
             .OrderBy(client => client.FullName)
             .Select(client => new ClientDto
             {

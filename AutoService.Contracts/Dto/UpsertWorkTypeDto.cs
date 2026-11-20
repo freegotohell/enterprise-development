@@ -12,6 +12,7 @@ public class UpsertWorkTypeDto
     /// Name of the work type
     /// </summary>
     [Required]
+    [StringLength(200)]
     public required string Name { get; init; }
 
     /// <summary>
@@ -36,5 +37,6 @@ public class UpsertWorkTypeDto
     /// Description of the work
     /// </summary>
     [Required]
+    [StringLength(2000)]
     public required string Description { get; init; }
 }

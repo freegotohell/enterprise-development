@@ -14,9 +14,9 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
 
         builder.Property(client => client.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
-        builder.Property(client => client.FullName).HasColumnName("full_name").IsRequired();
+        builder.Property(client => client.FullName).HasColumnName("full_name").HasMaxLength(200).IsRequired();
 
-        builder.Property(client => client.Phone).HasColumnName("phone").IsRequired();
+        builder.Property(client => client.Phone).HasColumnName("phone").HasMaxLength(32).IsRequired();
 
         builder.HasMany(client => client.Cars).WithOne(car => car.Client).HasForeignKey(car => car.ClientId).OnDelete(DeleteBehavior.Restrict);
 

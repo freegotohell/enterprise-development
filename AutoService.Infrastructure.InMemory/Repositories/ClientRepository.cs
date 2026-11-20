@@ -9,7 +9,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class ClientRepository(AutoServiceContext context) : IClientRepository
 {
-    private int nextId = context.Clients.Count == 0 ? 1 : context.Clients.Max(client => client.Id) + 1;
+    private int _nextId = context.Clients.Count == 0 ? 1 : context.Clients.Max(client => client.Id) + 1;
 
     /// <inheritdoc />
     public Task<List<Client>> GetAllAsync()
@@ -33,7 +33,7 @@ public class ClientRepository(AutoServiceContext context) : IClientRepository
             return Task.FromResult(entity);
         }
 
-        entity.Id = nextId++;
+        entity.Id = _nextId++;
         context.Clients.Add(entity);
 
         return Task.FromResult(entity);

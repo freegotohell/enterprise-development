@@ -11,18 +11,21 @@ public class UpsertCarDto
     /// License plate number
     /// </summary>
     [Required]
+    [StringLength(16)]
     public required string LicensePlate { get; init; }
 
     /// <summary>
     /// Car brand
     /// </summary>
     [Required]
+    [StringLength(100)]
     public required string Brand { get; init; }
 
     /// <summary>
     /// Car model
     /// </summary>
     [Required]
+    [StringLength(100)]
     public required string Model { get; init; }
 
     /// <summary>

@@ -9,7 +9,7 @@ namespace AutoService.Infrastructure.InMemory.Repositories;
 /// </summary>
 public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepository
 {
-    private int nextId = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(workType => workType.Id) + 1;
+    private int _nextId = context.WorkTypes.Count == 0 ? 1 : context.WorkTypes.Max(workType => workType.Id) + 1;
 
     /// <inheritdoc />
     public Task<List<WorkType>> GetAllAsync()
@@ -33,7 +33,7 @@ public class WorkTypeRepository(AutoServiceContext context) : IWorkTypeRepositor
             return Task.FromResult(entity);
         }
 
-        entity.Id = nextId++;
+        entity.Id = _nextId++;
         context.WorkTypes.Add(entity);
 
         return Task.FromResult(entity);
