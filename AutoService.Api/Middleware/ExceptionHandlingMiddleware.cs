@@ -6,7 +6,7 @@ using MySql.Data.MySqlClient;
 namespace AutoService.Api.Middleware;
 
 /// <summary>
-/// Converts database conflicts and unhandled exceptions to ProblemDetails responses.
+/// Converts database conflicts and unhandled exceptions to ProblemDetails responses
 /// </summary>
 public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
@@ -54,8 +54,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             }
 
             context.Response.Clear();
-            context.Response.StatusCode =
-                StatusCodes.Status500InternalServerError;
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
